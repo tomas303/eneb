@@ -73,18 +73,17 @@ func (data *Data) LoadEnergies2() *utils.Iterator[Energy] {
 		return nil
 	}
 	return utils.NewIterator[Energy](
-		func(channel utils.IteratorChannel[Energy], accessor *utils.Accessor) {
+		func(channel utils.IteratorChannel[Energy]) {
 			defer rows.Close()
 			for {
-				accessor.Wait()
 				if rows.Next() {
 					energy := NewEnergy()
 					err := rows.Scan(&energy.ID, &energy.Amount, &energy.Info)
-					var x utils.Result[*Energy, error]
+					var x utils.Result[Energy, error]
 					if err != nil {
 						x.Err = err
 					} else {
-						x.Value = &energy
+						x.Value = energy
 					}
 					channel <- x
 				} else {
