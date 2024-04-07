@@ -11,7 +11,7 @@ type Data struct {
 }
 
 func New(dbpath string) *Data {
-	db, err := sql.Open("sqlite3", dbpath)
+	db, err := sql.Open("sqlite", dbpath)
 	if err != nil {
 		log.Fatal(err)
 	}

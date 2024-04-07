@@ -1,5 +1,3 @@
-//go:build cgo
-
 package main
 
 import (
@@ -15,7 +13,7 @@ import (
 	"gobackend/config"
 	"gobackend/data"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/glebarez/go-sqlite"
 )
 
 // album represents data about a record album.
