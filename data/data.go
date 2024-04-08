@@ -6,11 +6,7 @@ import (
 	"log"
 )
 
-type Data struct {
-	db *sql.DB
-}
-
-func New(dbpath string) *Data {
+func Open(dbpath string) *sql.DB {
 	db, err := sql.Open("sqlite", dbpath)
 	if err != nil {
 		log.Fatal(err)
@@ -25,15 +21,11 @@ func New(dbpath string) *Data {
 		db.Close()
 		log.Fatal(err)
 	}
-	return &Data{db: db}
+	return db
 }
 
-func (data *Data) Close() {
-	data.db.Close()
-}
-
-func (data *Data) LoadEnergy(id int32) (*Energy, error) {
-	rows, err := data.db.Query("select amount, info from energies where id = :id", id)
+func LoadEnergy(db *sql.DB, id int64) (*Energy, error) {
+	rows, err := db.Query("select amount, info from energies where id = :id", id)
 	if err != nil {
 		return nil, err
 	}
@@ -49,8 +41,40 @@ func (data *Data) LoadEnergy(id int32) (*Energy, error) {
 	return &energy, nil
 }
 
-func (data *Data) LoadEnergies() (*[]Energy, error) {
-	rows, err := data.db.Query("select amount, info from energies order by id")
+func UpdateEnergy(db *sql.DB, en *Energy) (*Energy, error) {
+	stmt, err := db.Prepare("update energies set amount=?, info=? where id=?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(en.Amount, en.Info, en.ID)
+	if err != nil {
+		return nil, err
+	}
+	reten := *en
+	return &reten, nil
+}
+
+func InsertEnergy(db *sql.DB, en *Energy) (*Energy, error) {
+	stmt, err := db.Prepare("insert into energies(amount, info) VALUES(?, ?)")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+	result, err := stmt.Exec(en.Amount, en.Info)
+	if err != nil {
+		return nil, err
+	}
+	reten := *en
+	reten.ID, err = result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+	return &reten, nil
+}
+
+func LoadEnergies(db *sql.DB) (*[]Energy, error) {
+	rows, err := db.Query("select amount, info from energies order by id")
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +91,8 @@ func (data *Data) LoadEnergies() (*[]Energy, error) {
 	return &energies, nil
 }
 
-func (data *Data) LoadEnergies2() *utils.Iterator[Energy] {
-	rows, err := data.db.Query("select amount, info from energies order by id")
+func LoadEnergies2(db *sql.DB) *utils.Iterator[Energy] {
+	rows, err := db.Query("select amount, info from energies order by id")
 	if err != nil {
 		return nil
 	}

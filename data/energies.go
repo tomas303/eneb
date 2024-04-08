@@ -1,7 +1,7 @@
 package data
 
 type Energy struct {
-	ID     int32
+	ID     int64
 	Amount int64
 	Info   string
 }
