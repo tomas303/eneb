@@ -2,7 +2,7 @@ package data
 
 import (
 	"database/sql"
-	"gobackend/utils"
+	"eneb/utils"
 	"log"
 )
 

@@ -1,4 +1,4 @@
-module gobackend
+module eneb
 
 go 1.22.1
 

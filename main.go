@@ -11,8 +11,8 @@ import (
 	"database/sql"
 	"log"
 
-	"gobackend/config"
-	"gobackend/data"
+	"eneb/config"
+	"eneb/data"
 
 	_ "github.com/glebarez/go-sqlite"
 )
