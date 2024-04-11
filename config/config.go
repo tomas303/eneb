@@ -11,7 +11,8 @@ type DataConfig struct {
 }
 
 type ServerConfig struct {
-	Port int
+	Port    int
+	Release bool
 }
 
 type Config struct {
@@ -21,7 +22,7 @@ type Config struct {
 
 func (cfg *Config) defaultValues() {
 	cfg.Data = DataConfig{Storepath: "."}
-	cfg.Server = ServerConfig{Port: 8080}
+	cfg.Server = ServerConfig{Port: 8080, Release: false}
 }
 
 func New(filename string) (*Config, error) {

@@ -20,20 +20,25 @@ import (
 func main() {
 
 	// configuration
-	cfgFile := "config1.toml"
+	cfgFile := "config.toml"
 	cfg, err := config.New(cfgFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("Storepath:\t", cfg.Data.Storepath)
 	log.Println("Port:\t", cfg.Server.Port)
+	log.Println("Release:\t", cfg.Server.Release)
+
+	if cfg.Server.Release {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	// database
 	db := data.Open(filepath.Join(cfg.Data.Storepath, "energies.db"))
 	defer db.Close()
 
 	// routes
-	r := gin.Default()
+	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(errHandler)
 	r.GET("/energies",

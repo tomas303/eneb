@@ -25,7 +25,7 @@ func Open(dbpath string) *sql.DB {
 }
 
 func LoadEnergy(db *sql.DB, id int64) (*Energy, error) {
-	rows, err := db.Query("select amount, info from energies where id = :id", id)
+	rows, err := db.Query("select amount, info from energies where id = ?", id)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func InsertEnergy(db *sql.DB, en *Energy) (*Energy, error) {
 }
 
 func LoadEnergies(db *sql.DB) (*[]Energy, error) {
-	rows, err := db.Query("select amount, info from energies order by id")
+	rows, err := db.Query("select id, amount, info from energies order by id")
 	if err != nil {
 		return nil, err
 	}

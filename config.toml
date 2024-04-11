@@ -2,4 +2,5 @@
 storepath = "/home/tomas/development/tomas303/projects/energies/db"
 
 [server]
-port = 8080
+port = 8085
+release = false
