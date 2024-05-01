@@ -41,6 +41,7 @@ func main() {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(errHandler)
+	r.Use(corsMiddleware())
 	r.GET("/energies",
 		func(c *gin.Context) {
 			getEnergies(c, db)
@@ -81,6 +82,21 @@ func errHandler(c *gin.Context) {
 	c.Next()
 }
 
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Allow requests from any origin with the specified methods
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		// Handle preflight OPTIONS request
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(200)
+			return
+		}
+		c.Next()
+	}
+}
+
 func getEnergies(c *gin.Context, db *sql.DB) {
 	rows, err := data.LoadEnergies(db)
 	if err != nil {
@@ -110,9 +126,10 @@ func postEnergy(c *gin.Context, db *sql.DB) {
 		c.Set("error", err)
 		return
 	}
-	if energy.ID == 0 {
-		data.InsertEnergy(db, &energy)
-	} else {
-		data.UpdateEnergy(db, &energy)
+	_, err := data.PostEnergy(db, &energy)
+	if err != nil {
+		c.Set("error", err)
+		return
 	}
+	c.Status(http.StatusCreated)
 }

@@ -25,74 +25,54 @@ func Open(dbpath string) *sql.DB {
 }
 
 func LoadEnergy(db *sql.DB, id int64) (*Energy, error) {
-	rows, err := db.Query("select amount, info from energies where id = ?", id)
+	rows, err := db.Query("select id, amount, info, created from energies where id = ?", id)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	energy := NewEnergy()
+	en := NewEnergy()
 	if rows.Next() {
-		err := rows.Scan(&energy.Amount, &energy.Info)
+		err := rows.Scan(&en.ID, &en.Amount, &en.Info, &en.Created)
 		if err != nil {
 			return nil, err
 		}
-		energy.ID = id
 	}
-	return &energy, nil
+	return &en, nil
 }
 
-func UpdateEnergy(db *sql.DB, en *Energy) (*Energy, error) {
-	stmt, err := db.Prepare("update energies set amount=?, info=? where id=?")
+func PostEnergy(db *sql.DB, en *Energy) (*Energy, error) {
+	stmt, err := db.Prepare("insert or replace into energies(id, amount, info, created) VALUES(?,?,?,?)")
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(en.Amount, en.Info, en.ID)
+	_, err = stmt.Exec(en.ID, en.Amount, en.Info, en.Created)
 	if err != nil {
 		return nil, err
 	}
-	reten := *en
-	return &reten, nil
-}
-
-func InsertEnergy(db *sql.DB, en *Energy) (*Energy, error) {
-	stmt, err := db.Prepare("insert into energies(amount, info) VALUES(?, ?)")
-	if err != nil {
-		return nil, err
-	}
-	defer stmt.Close()
-	result, err := stmt.Exec(en.Amount, en.Info)
-	if err != nil {
-		return nil, err
-	}
-	reten := *en
-	reten.ID, err = result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-	return &reten, nil
+	return en, nil
 }
 
 func LoadEnergies(db *sql.DB) (*[]Energy, error) {
-	rows, err := db.Query("select id, amount, info from energies order by id")
+	rows, err := db.Query("select id, amount, info, created from energies order by id")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	var energies []Energy
 	for rows.Next() {
-		energy := NewEnergy()
-		err := rows.Scan(&energy.ID, &energy.Amount, &energy.Info)
+		en := NewEnergy()
+		err := rows.Scan(&en.ID, &en.Amount, &en.Info, &en.Created)
 		if err != nil {
 			return nil, err
 		}
-		energies = append(energies, energy)
+		energies = append(energies, en)
 	}
 	return &energies, nil
 }
 
 func LoadEnergies2(db *sql.DB) *utils.Iterator[Energy] {
-	rows, err := db.Query("select amount, info from energies order by id")
+	rows, err := db.Query("select amount, info, created from energies order by id")
 	if err != nil {
 		return nil
 	}
@@ -101,13 +81,13 @@ func LoadEnergies2(db *sql.DB) *utils.Iterator[Energy] {
 			defer rows.Close()
 			for {
 				if rows.Next() {
-					energy := NewEnergy()
-					err := rows.Scan(&energy.ID, &energy.Amount, &energy.Info)
+					en := NewEnergy()
+					err := rows.Scan(&en.ID, &en.Amount, &en.Info, &en.Created)
 					var x utils.Result[Energy, error]
 					if err != nil {
 						x.Err = err
 					} else {
-						x.Value = energy
+						x.Value = en
 					}
 					channel <- x
 				} else {
@@ -121,9 +101,10 @@ func prepare(db *sql.DB) error {
 	// Create the table if it doesn't exist.
 	_, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS energies (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			id TEXT,
 			amount INTEGER,
-			info TEXT
+			info TEXT,
+			created INTEGER
 		)
 	`)
 	if err != nil {
@@ -140,7 +121,7 @@ func prepare(db *sql.DB) error {
 	}
 	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS energiestags (
-			enerygy_id INTEGER,
+			enerygy_id TEXT,
 			tag_id INTEGER,
 			PRIMARY KEY(enerygy_id, tag_id),
 			FOREIGN KEY(enerygy_id) REFERENCES energies(id),
