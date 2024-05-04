@@ -19,6 +19,7 @@ import (
 
 func main() {
 
+	gin.EnableJsonDecoderUseNumber()
 	// configuration
 	cfgFile := "config.toml"
 	cfg, err := config.New(cfgFile)

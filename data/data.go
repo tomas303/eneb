@@ -46,7 +46,7 @@ func PostEnergy(db *sql.DB, en *Energy) (*Energy, error) {
 		return nil, err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(en.ID, en.Amount, en.Info, en.Created)
+	_, err = stmt.Exec(en.ID, en.Amount.Val, en.Info, en.Created.Val)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func LoadEnergies(db *sql.DB) (*[]Energy, error) {
 	var energies []Energy
 	for rows.Next() {
 		en := NewEnergy()
-		err := rows.Scan(&en.ID, &en.Amount, &en.Info, &en.Created)
+		err := rows.Scan(&en.ID, &en.Amount.Val, &en.Info, &en.Created.Val)
 		if err != nil {
 			return nil, err
 		}
