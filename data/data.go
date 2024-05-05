@@ -3,6 +3,7 @@ package data
 import (
 	"database/sql"
 	"eneb/utils"
+	"fmt"
 	"log"
 )
 
@@ -54,7 +55,7 @@ func PostEnergy(db *sql.DB, en *Energy) (*Energy, error) {
 }
 
 func LoadEnergies(db *sql.DB) (*[]Energy, error) {
-	rows, err := db.Query("select id, amount, info, created from energies order by id")
+	rows, err := db.Query("select id, amount, info, created from energies order by created")
 	if err != nil {
 		return nil, err
 	}
@@ -67,6 +68,52 @@ func LoadEnergies(db *sql.DB) (*[]Energy, error) {
 			return nil, err
 		}
 		energies = append(energies, en)
+	}
+	return &energies, nil
+}
+
+func LoadEnergiesAfter(db *sql.DB, pin int64, take int) (*[]Energy, error) {
+	rows, err := db.Query(fmt.Sprintf(
+		`select id, amount, info, created 
+		from energies 
+		where created > %d 
+		order by created limit %d`,
+		pin, take))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	energies := make([]Energy, 0, take)
+	for rows.Next() {
+		en := NewEnergy()
+		err := rows.Scan(&en.ID, &en.Amount.Val, &en.Info, &en.Created.Val)
+		if err != nil {
+			return nil, err
+		}
+		energies = append(energies, en)
+	}
+	return &energies, nil
+}
+
+func LoadEnergiesBefore(db *sql.DB, pin int64, take int) (*[]Energy, error) {
+	rows, err := db.Query(fmt.Sprintf(
+		`select id, amount, info, created 
+		from energies 
+		where created < %d 
+		order by created desc limit %d`,
+		pin, take))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	energies := make([]Energy, 0, take)
+	for rows.Next() {
+		en := NewEnergy()
+		err := rows.Scan(&en.ID, &en.Amount.Val, &en.Info, &en.Created.Val)
+		if err != nil {
+			return nil, err
+		}
+		energies = append([]Energy{en}, energies...)
 	}
 	return &energies, nil
 }
