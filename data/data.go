@@ -26,14 +26,14 @@ func Open(dbpath string) *sql.DB {
 }
 
 func LoadEnergy(db *sql.DB, id int64) (*Energy, error) {
-	rows, err := db.Query("select id, amount, info, created from energies where id = ?", id)
+	rows, err := db.Query("select id, kind, amount, info, created from energies where id = ?", id)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	en := NewEnergy()
 	if rows.Next() {
-		err := rows.Scan(&en.ID, &en.Amount, &en.Info, &en.Created)
+		err := rows.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created)
 		if err != nil {
 			return nil, err
 		}
@@ -42,12 +42,12 @@ func LoadEnergy(db *sql.DB, id int64) (*Energy, error) {
 }
 
 func PostEnergy(db *sql.DB, en *Energy) (*Energy, error) {
-	stmt, err := db.Prepare("insert or replace into energies(id, amount, info, created) VALUES(?,?,?,?)")
+	stmt, err := db.Prepare("insert or replace into energies(id, kind, amount, info, created) VALUES(?,?,?,?,?)")
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(en.ID, en.Amount.Val, en.Info, en.Created.Val)
+	_, err = stmt.Exec(en.ID, en.Kind, en.Amount.Val, en.Info, en.Created.Val)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func LoadEnergies(db *sql.DB) (*[]Energy, error) {
 
 func LoadEnergiesAfter(db *sql.DB, pin int64, take int) (*[]Energy, error) {
 	rows, err := db.Query(fmt.Sprintf(
-		`select id, amount, info, created 
+		`select id, kind, amount, info, created 
 		from energies 
 		where created > %d 
 		order by created limit %d`,
@@ -86,7 +86,7 @@ func LoadEnergiesAfter(db *sql.DB, pin int64, take int) (*[]Energy, error) {
 	energies := make([]Energy, 0, take)
 	for rows.Next() {
 		en := NewEnergy()
-		err := rows.Scan(&en.ID, &en.Amount.Val, &en.Info, &en.Created.Val)
+		err := rows.Scan(&en.ID, &en.Kind, &en.Amount.Val, &en.Info, &en.Created.Val)
 		if err != nil {
 			return nil, err
 		}
@@ -97,7 +97,7 @@ func LoadEnergiesAfter(db *sql.DB, pin int64, take int) (*[]Energy, error) {
 
 func LoadEnergiesBefore(db *sql.DB, pin int64, take int) (*[]Energy, error) {
 	rows, err := db.Query(fmt.Sprintf(
-		`select id, amount, info, created 
+		`select id, kind, amount, info, created 
 		from energies 
 		where created < %d 
 		order by created desc limit %d`,
@@ -109,7 +109,7 @@ func LoadEnergiesBefore(db *sql.DB, pin int64, take int) (*[]Energy, error) {
 	energies := make([]Energy, 0, take)
 	for rows.Next() {
 		en := NewEnergy()
-		err := rows.Scan(&en.ID, &en.Amount.Val, &en.Info, &en.Created.Val)
+		err := rows.Scan(&en.ID, &en.Kind, &en.Amount.Val, &en.Info, &en.Created.Val)
 		if err != nil {
 			return nil, err
 		}
@@ -145,10 +145,10 @@ func LoadEnergies2(db *sql.DB) *utils.Iterator[Energy] {
 }
 
 func prepare(db *sql.DB) error {
-	// Create the table if it doesn't exist.
 	_, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS energies (
 			id TEXT,
+			kind INTEGER,
 			amount INTEGER,
 			info TEXT,
 			created INTEGER

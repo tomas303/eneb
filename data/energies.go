@@ -10,6 +10,7 @@ import (
 
 type Energy struct {
 	ID      string
+	Kind    int
 	Amount  cbigint
 	Info    string
 	Created cbigint
@@ -18,6 +19,7 @@ type Energy struct {
 func NewEnergy() Energy {
 	return Energy{
 		ID:      uuid.NewString(),
+		Kind:    0,
 		Amount:  cbigint{Val: 0},
 		Info:    "",
 		Created: cbigint{Val: time.Now().Unix()},
