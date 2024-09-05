@@ -144,6 +144,28 @@ func LoadEnergies2(db *sql.DB) *utils.Iterator[Energy] {
 		})
 }
 
+func LoadLastEnergies(db *sql.DB, count int) (*[]Energy, error) {
+	rows, err := db.Query(fmt.Sprintf(
+		`select id, kind, amount, info, created 
+		from energies 
+		order by created desc limit %d`,
+		count))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	energies := make([]Energy, 0, count)
+	for rows.Next() {
+		en := NewEnergy()
+		err := rows.Scan(&en.ID, &en.Kind, &en.Amount.Val, &en.Info, &en.Created.Val)
+		if err != nil {
+			return nil, err
+		}
+		energies = append([]Energy{en}, energies...)
+	}
+	return &energies, nil
+}
+
 func prepare(db *sql.DB) error {
 	_, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS energies (
