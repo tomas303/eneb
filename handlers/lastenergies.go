@@ -3,14 +3,13 @@ package handlers
 import (
 	"database/sql"
 	"eneb/data"
-	"eneb/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Reg_lastenergies(r *gin.Engine, db *sql.DB) {
-	fcountparam := utils.QParamAsInt("count", 10, abortWith(http.StatusBadRequest))
+	fcountparam := qParamAsInt("count", 10, abortWith(http.StatusBadRequest))
 	r.GET("/lastenergies",
 		func(c *gin.Context) {
 			count := fcountparam(c)

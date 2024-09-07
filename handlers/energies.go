@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"eneb/data"
-	"eneb/utils"
 	"math"
 	"net/http"
 
@@ -11,9 +10,9 @@ import (
 )
 
 func Reg_energies(r *gin.Engine, db *sql.DB) {
-	fprevparam := utils.QParamAsInt("prev", 0, abortWith(http.StatusBadRequest))
-	fnextparam := utils.QParamAsInt("next", 10, abortWith(http.StatusBadRequest))
-	fpinparam := utils.QParamAsInt64("pin", math.MaxInt64, abortWith(http.StatusBadRequest))
+	fprevparam := qParamAsInt("prev", 0, abortWith(http.StatusBadRequest))
+	fnextparam := qParamAsInt("next", 10, abortWith(http.StatusBadRequest))
+	fpinparam := qParamAsInt64("pin", math.MaxInt64, abortWith(http.StatusBadRequest))
 
 	r.GET("/energies",
 		func(c *gin.Context) {
