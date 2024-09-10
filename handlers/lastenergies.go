@@ -9,20 +9,23 @@ import (
 )
 
 func Reg_lastenergies(r *gin.Engine, db *sql.DB) {
-	fcountparam := qParamAsInt("count", 10, abortWith(http.StatusBadRequest))
-	r.GET("/lastenergies",
-		func(c *gin.Context) {
-			count := fcountparam(c)
-			getLastEnergies(c, db, count)
-		})
-}
 
-func getLastEnergies(c *gin.Context, db *sql.DB, count int) {
-	var rows *[]data.Energy
-	var err error
-	rows, err = data.LoadLastEnergies(db, count)
+	getcountparam := MakeGetQueryParAsInt("count", 10, abortWith(http.StatusBadRequest))
+
+	cmdSelectMany, err := data.MakeDataCmdSelectMany[*data.Energy](db,
+		`select id, kind, amount, info, created 
+		from energies 
+		order by created desc limit %d`,
+		func(row data.RowScanner) (*data.Energy, error) {
+			en := data.NewEnergy()
+			err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created)
+			if err != nil {
+				return nil, err
+			}
+			return &en, nil
+		})
 	if err != nil {
-		c.AbortWithError(400, err)
+		panic(err)
 	}
-	c.IndentedJSON(http.StatusOK, rows)
+	r.GET("/lastenergies", MakeHandlerGetMany[*data.Energy]([]ParamGetter{getcountparam}, cmdSelectMany))
 }

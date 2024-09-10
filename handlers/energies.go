@@ -10,57 +10,75 @@ import (
 )
 
 func Reg_energies(r *gin.Engine, db *sql.DB) {
-	fprevparam := qParamAsInt("prev", 0, abortWith(http.StatusBadRequest))
-	fnextparam := qParamAsInt("next", 10, abortWith(http.StatusBadRequest))
-	fpinparam := qParamAsInt64("pin", math.MaxInt64, abortWith(http.StatusBadRequest))
+	getprevparam := MakeGetQueryParAsInt("prev", 0, abortWith(http.StatusBadRequest))
+	getnextparam := MakeGetQueryParAsInt("next", 10, abortWith(http.StatusBadRequest))
+	getpinparam := MakeGetQueryParAsInt64("pin", math.MaxInt64, abortWith(http.StatusBadRequest))
+
+	cmdSelectBefore, err := data.MakeDataCmdSelectMany[*data.Energy](db,
+		`select id, kind, amount, info, created 
+		from energies 
+		where created < %d 
+		order by created desc limit %d`,
+		func(row data.RowScanner) (*data.Energy, error) {
+			en := data.NewEnergy()
+			err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created)
+			if err != nil {
+				return nil, err
+			}
+			return &en, nil
+		})
+	if err != nil {
+		panic(err)
+	}
+	beforeHandler := MakeHandlerGetMany[*data.Energy]([]ParamGetter{getpinparam, getprevparam}, cmdSelectBefore)
+
+	cmdSelectAfter, err := data.MakeDataCmdSelectMany[*data.Energy](db,
+		`select id, kind, amount, info, created 
+		from energies 
+		where created > %d 
+		order by created limit %d`,
+		func(row data.RowScanner) (*data.Energy, error) {
+			en := data.NewEnergy()
+			err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created)
+			if err != nil {
+				return nil, err
+			}
+			return &en, nil
+		})
+	if err != nil {
+		panic(err)
+	}
+	afterHandler := MakeHandlerGetMany[*data.Energy]([]ParamGetter{getpinparam, getnextparam}, cmdSelectAfter)
 
 	r.GET("/energies",
 		func(c *gin.Context) {
-			prev := fprevparam(c)
-			next := fnextparam(c)
-			pin := fpinparam(c)
+			prev := getprevparam(c).(int)
+			next := getnextparam(c).(int)
+			pin := getpinparam(c)
 			if prev != 0 && next != 0 {
 				c.AbortWithError(http.StatusBadRequest, paramErr{message: "cannot specify both prev and next parameter"})
 			}
 			if (prev != 0 || next != 0) && pin == 0 {
 				c.AbortWithError(http.StatusBadRequest, paramErr{message: "for prev or next parameter the pin parameter is mandatory"})
 			}
-			getEnergies(c, db, prev, next, pin)
+			if prev > 0 {
+				beforeHandler(c)
+			} else if next > 0 {
+				afterHandler(c)
+			} else {
+				c.AbortWithError(400, paramErr{message: "nor prev nor next parameter specified"})
+			}
 		})
 
-	r.POST("/energies",
-		func(c *gin.Context) {
-			postEnergy(c, db)
+	cmdSave, err := data.MakeDataCmdSaveOne[*data.Energy](db,
+		"insert or replace into energies(id, kind, amount, info, created) VALUES(?,?,?,?,?)",
+		func(en *data.Energy) []any {
+			return []any{en.ID, en.Kind, en.Amount.Val, en.Info, en.Created.Val}
 		})
-
-}
-
-func getEnergies(c *gin.Context, db *sql.DB, prev int, next int, pin int64) {
-	var rows *[]data.Energy
-	var err error
-	if prev > 0 {
-		rows, err = data.LoadEnergiesBefore(db, pin, prev)
-	} else if next > 0 {
-		rows, err = data.LoadEnergiesAfter(db, pin, next)
-	} else {
-		c.AbortWithError(400, paramErr{message: "nor prev nor next parameter specified"})
-	}
 	if err != nil {
-		c.AbortWithError(400, err)
+		panic(err)
 	}
-	c.IndentedJSON(http.StatusOK, rows)
-}
+	postHandler := MakeHandlerPostOne[*data.Energy](cmdSave)
 
-func postEnergy(c *gin.Context, db *sql.DB) {
-	var energy data.Energy
-	if err := c.BindJSON(&energy); err != nil {
-		c.Set("error", err)
-		return
-	}
-	_, err := data.PostEnergy(db, &energy)
-	if err != nil {
-		c.Set("error", err)
-		return
-	}
-	c.Status(http.StatusCreated)
+	r.POST("/energies", postHandler)
 }

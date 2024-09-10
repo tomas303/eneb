@@ -33,7 +33,7 @@ func main() {
 	}
 
 	// database
-	db := data.Open(filepath.Join(cfg.Data.Storepath, "energies.db"))
+	db := data.OpenDB(filepath.Join(cfg.Data.Storepath, "energies.db"))
 	defer db.Close()
 
 	// routes

@@ -3,29 +3,27 @@ package handlers
 import (
 	"database/sql"
 	"eneb/data"
-	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Reg_energiesid(r *gin.Engine, db *sql.DB) {
-	r.GET("/energies/:id",
-		func(c *gin.Context) {
-			getEnergy(c, db)
-		})
-}
 
-func getEnergy(c *gin.Context, db *sql.DB) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	getID := MakeGetPathParAsStr("id")
+
+	cmdSelectOne, err := data.MakeDataCmdSelectOne[*data.Energy](db,
+		"select id, kind, amount, info, created from energies where id = ?",
+		func(row data.RowScanner) (*data.Energy, error) {
+			en := data.NewEnergy()
+			err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created)
+			if err != nil {
+				return nil, err
+			}
+			return &en, nil
+		})
 	if err != nil {
-		c.Set("error", err)
-		return
+		panic(err)
 	}
-	energy, err := data.LoadEnergy(db, id)
-	if err != nil {
-		c.Set("error", err)
-		return
-	}
-	c.IndentedJSON(http.StatusOK, energy)
+
+	r.GET("/energies/:id", MakeHandlerGetOne[*data.Energy](getID, cmdSelectOne))
 }

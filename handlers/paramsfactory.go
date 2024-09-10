@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type ParamGetter func(c *gin.Context) any
+
 func queryS(c *gin.Context, name string, defval string) string {
 	v := c.Query(name)
 	if v == "" {
@@ -25,8 +27,8 @@ func queryI(c *gin.Context, name string, defval int) (int, error) {
 	return val, err
 }
 
-func qParamAsInt(name string, defval int, onerror func(c *gin.Context, err error)) func(c *gin.Context) int {
-	return func(c *gin.Context) int {
+func MakeGetQueryParAsInt(name string, defval int, onerror func(c *gin.Context, err error)) func(c *gin.Context) any {
+	return func(c *gin.Context) any {
 		val, err := queryI(c, name, defval)
 		if err != nil {
 			onerror(c, err)
@@ -35,12 +37,23 @@ func qParamAsInt(name string, defval int, onerror func(c *gin.Context, err error
 	}
 }
 
-func qParamAsInt64(name string, defval int64, onerror func(c *gin.Context, err error)) func(c *gin.Context) int64 {
-	return func(c *gin.Context) int64 {
+func MakeGetQueryParAsInt64(name string, defval int64, onerror func(c *gin.Context, err error)) func(c *gin.Context) any {
+	return func(c *gin.Context) any {
 		val, err := queryI64(c, name, defval)
 		if err != nil {
 			onerror(c, err)
 		}
 		return val
+	}
+}
+
+func MakeGetPathParAsStr(name string) func(c *gin.Context) string {
+	return func(c *gin.Context) string {
+		value := c.Param(name)
+		// if value == "" {
+		// 	c.Set("error", err)
+		// 	return
+		// }
+		return value
 	}
 }
