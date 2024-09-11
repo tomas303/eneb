@@ -15,10 +15,10 @@ func Reg_lastenergies(r *gin.Engine, db *sql.DB) {
 	cmdSelectMany, err := data.MakeDataCmdSelectMany[*data.Energy](db,
 		`select id, kind, amount, info, created 
 		from energies 
-		order by created desc limit %d`,
+		order by created desc limit ?`,
 		func(row data.RowScanner) (*data.Energy, error) {
 			en := data.NewEnergy()
-			err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created)
+			err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created.Val)
 			if err != nil {
 				return nil, err
 			}
@@ -27,5 +27,5 @@ func Reg_lastenergies(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	r.GET("/lastenergies", MakeHandlerGetMany[*data.Energy]([]ParamGetterFunc{getcountparam}, cmdSelectMany))
+	r.GET("/lastenergies", MakeHandlerGetMany[*data.Energy]([]ParamGetterFunc{getcountparam}, cmdSelectMany, true))
 }

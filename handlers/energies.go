@@ -17,8 +17,8 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	cmdSelectBefore, err := data.MakeDataCmdSelectMany[*data.Energy](db,
 		`select id, kind, amount, info, created 
 		from energies 
-		where created < %d 
-		order by created desc limit %d`,
+		where created < ?
+		order by created desc limit ?`,
 		func(row data.RowScanner) (*data.Energy, error) {
 			en := data.NewEnergy()
 			err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created)
@@ -30,13 +30,13 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	beforeHandler := MakeHandlerGetMany[*data.Energy]([]ParamGetterFunc{getpinparam, getprevparam}, cmdSelectBefore)
+	beforeHandler := MakeHandlerGetMany[*data.Energy]([]ParamGetterFunc{getpinparam, getprevparam}, cmdSelectBefore, false)
 
 	cmdSelectAfter, err := data.MakeDataCmdSelectMany[*data.Energy](db,
 		`select id, kind, amount, info, created 
 		from energies 
-		where created > %d 
-		order by created limit %d`,
+		where created > ?
+		order by created limit ?`,
 		func(row data.RowScanner) (*data.Energy, error) {
 			en := data.NewEnergy()
 			err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created)
@@ -48,7 +48,7 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	afterHandler := MakeHandlerGetMany[*data.Energy]([]ParamGetterFunc{getpinparam, getnextparam}, cmdSelectAfter)
+	afterHandler := MakeHandlerGetMany[*data.Energy]([]ParamGetterFunc{getpinparam, getnextparam}, cmdSelectAfter, false)
 
 	r.GET("/energies",
 		func(c *gin.Context) {
@@ -73,7 +73,7 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	cmdSave, err := data.MakeDataCmdSaveOne[*data.Energy](db,
 		"insert or replace into energies(id, kind, amount, info, created) VALUES(?,?,?,?,?)",
 		func(en *data.Energy) []any {
-			return []any{en.ID, en.Kind, en.Amount.Val, en.Info, en.Created.Val}
+			return []any{en.ID, en.Kind, en.Amount, en.Info, en.Created.Val}
 		})
 	if err != nil {
 		panic(err)

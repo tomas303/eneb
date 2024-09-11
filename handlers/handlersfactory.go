@@ -21,7 +21,7 @@ func MakeHandlerGetOne[T any](param ParamGetterFunc, cmd data.DataCmdSelectOneFu
 	}
 }
 
-func MakeHandlerGetMany[T any](params []ParamGetterFunc, cmd data.DataCmdSelectManyFunc[T]) HandlerFunc {
+func MakeHandlerGetMany[T any](params []ParamGetterFunc, cmd data.DataCmdSelectManyFunc[T], reverse bool) HandlerFunc {
 	return func(c *gin.Context) {
 		args := make([]any, len(params))
 		for i := 0; i < len(params); i++ {
@@ -31,6 +31,11 @@ func MakeHandlerGetMany[T any](params []ParamGetterFunc, cmd data.DataCmdSelectM
 		if err != nil {
 			c.Set("error", err)
 			return
+		}
+		if reverse {
+			for i := 0; i < len(value)/2; i++ {
+				value[i], value[len(value)-1-i] = value[len(value)-1-i], value[i]
+			}
 		}
 		c.IndentedJSON(http.StatusOK, value)
 	}

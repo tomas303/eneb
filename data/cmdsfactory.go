@@ -33,7 +33,7 @@ func MakeDataCmdSelectMany[T any](db *sql.DB, sqlText string, scanner DataScanne
 		return nil, err
 	}
 	return func(params []any) ([]T, error) {
-		rows, err := stmt.Query(params)
+		rows, err := stmt.Query(params...)
 		if err != nil {
 			return nil, err
 		}

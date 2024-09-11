@@ -11,7 +11,7 @@ import (
 type Energy struct {
 	ID      string
 	Kind    int
-	Amount  cbigint
+	Amount  int
 	Info    string
 	Created cbigint
 }
@@ -20,7 +20,7 @@ func NewEnergy() Energy {
 	return Energy{
 		ID:      uuid.NewString(),
 		Kind:    0,
-		Amount:  cbigint{Val: 0},
+		Amount:  0,
 		Info:    "",
 		Created: cbigint{Val: time.Now().Unix()},
 	}
