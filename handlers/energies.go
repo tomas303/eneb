@@ -30,7 +30,7 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	beforeHandler := MakeHandlerGetMany[*data.Energy]([]ParamGetter{getpinparam, getprevparam}, cmdSelectBefore)
+	beforeHandler := MakeHandlerGetMany[*data.Energy]([]ParamGetterFunc{getpinparam, getprevparam}, cmdSelectBefore)
 
 	cmdSelectAfter, err := data.MakeDataCmdSelectMany[*data.Energy](db,
 		`select id, kind, amount, info, created 
@@ -48,7 +48,7 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	afterHandler := MakeHandlerGetMany[*data.Energy]([]ParamGetter{getpinparam, getnextparam}, cmdSelectAfter)
+	afterHandler := MakeHandlerGetMany[*data.Energy]([]ParamGetterFunc{getpinparam, getnextparam}, cmdSelectAfter)
 
 	r.GET("/energies",
 		func(c *gin.Context) {

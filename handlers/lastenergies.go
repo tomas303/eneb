@@ -27,5 +27,5 @@ func Reg_lastenergies(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	r.GET("/lastenergies", MakeHandlerGetMany[*data.Energy]([]ParamGetter{getcountparam}, cmdSelectMany))
+	r.GET("/lastenergies", MakeHandlerGetMany[*data.Energy]([]ParamGetterFunc{getcountparam}, cmdSelectMany))
 }
