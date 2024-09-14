@@ -27,7 +27,7 @@ func MakeDataCmdSelectOne[T any](db *sql.DB, sqlText string, scanner DataScanner
 	}, nil
 }
 
-func MakeDataCmdSelectMany[T any](db *sql.DB, sqlText string, scanner DataScannerFunc[T]) (DataCmdSelectManyFunc[T], error) {
+func MakeDataCmdSelectMany[T any](db *sql.DB, sqlText string, reverse bool, scanner DataScannerFunc[T]) (DataCmdSelectManyFunc[T], error) {
 	stmt, err := db.Prepare(sqlText)
 	if err != nil {
 		return nil, err
@@ -45,6 +45,11 @@ func MakeDataCmdSelectMany[T any](db *sql.DB, sqlText string, scanner DataScanne
 				return nil, err
 			}
 			data = append(data, x)
+		}
+		if reverse {
+			for i := 0; i < len(data)/2; i++ {
+				data[i], data[len(data)-1-i] = data[len(data)-1-i], data[i]
+			}
 		}
 		return data, nil
 	}, nil
