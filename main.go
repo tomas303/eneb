@@ -2,10 +2,14 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"io/fs"
+	"net/http"
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 
+	"embed"
 	"log"
 
 	"eneb/config"
@@ -14,6 +18,9 @@ import (
 
 	_ "github.com/glebarez/go-sqlite"
 )
+
+//go:embed dist/*
+var distFS embed.FS
 
 func main() {
 
@@ -39,7 +46,13 @@ func main() {
 	// routes
 	r := gin.New()
 
+	// embedded static files
+	r.SetHTMLTemplate(template.Must(template.New("").ParseFS(distFS, "dist/*.html")))
+	assetsFS, _ := fs.Sub(distFS, "dist/assets")
+	r.StaticFS("/assets", http.FS(assetsFS))
+
 	handlers.Reg_common(r)
+	handlers.Reg_root(r)
 	handlers.Reg_energies(r, db)
 	handlers.Reg_energiesid(r, db)
 	handlers.Reg_lastenergies(r, db)
