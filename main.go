@@ -58,5 +58,5 @@ func main() {
 	handlers.Reg_lastenergies(r, db)
 
 	// start
-	r.Run(fmt.Sprintf("localhost:%d", cfg.Server.Port))
+	r.Run(fmt.Sprintf("0.0.0.0:%d", cfg.Server.Port))
 }
