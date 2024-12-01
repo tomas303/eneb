@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# PROVIDE: eneb 
+# REQUIRE: NETWORKING
+# KEYWORD: shutdown
+
+. /etc/rc.subr
+
+name="eneb"
+rcvar="eneb_enable"
+
+command="/usr/local/bin/eneb"
+pidfile="/var/run/${name}.pid"
+command_args=""
+
+start_precmd="cd /var/eneb"
+start_cmd="${command} ${command_args} &"
+stop_cmd="kill `cat ${pidfile}`"
+
+load_rc_config $name
+: ${eneb_enable:="NO"}
+
+run_rc_command "$1"
+
