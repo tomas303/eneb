@@ -3,16 +3,12 @@ package handlers
 import (
 	"database/sql"
 	"eneb/data"
-	"math"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Reg_energies(r *gin.Engine, db *sql.DB) {
-	getprevparam := MakeGetQueryParAsInt("prev", 0, abortWith(http.StatusBadRequest))
-	getnextparam := MakeGetQueryParAsInt("next", 10, abortWith(http.StatusBadRequest))
-	getpinparam := MakeGetQueryParAsInt64("pin", math.MaxInt64, abortWith(http.StatusBadRequest))
 
 	cmdSelectBefore, err := data.MakeDataCmdSelectMany[*data.Energy](db,
 		`select id, kind, amount, info, created 
@@ -22,7 +18,7 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 		false,
 		func(row data.RowScanner) (*data.Energy, error) {
 			en := data.NewEnergy()
-			err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created)
+			err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created.Val)
 			if err != nil {
 				return nil, err
 			}
@@ -31,7 +27,7 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	beforeHandler := MakeHandlerGetMany[*data.Energy]([]ParamGetterFunc{getpinparam, getprevparam}, cmdSelectBefore)
+	beforeHandler := MakeHandlerGetMany[*data.Energy](cmdSelectBefore)
 
 	cmdSelectAfter, err := data.MakeDataCmdSelectMany[*data.Energy](db,
 		`select id, kind, amount, info, created 
@@ -41,7 +37,7 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 		false,
 		func(row data.RowScanner) (*data.Energy, error) {
 			en := data.NewEnergy()
-			err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created)
+			err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created.Val)
 			if err != nil {
 				return nil, err
 			}
@@ -50,23 +46,24 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	afterHandler := MakeHandlerGetMany[*data.Energy]([]ParamGetterFunc{getpinparam, getnextparam}, cmdSelectAfter)
-
+	afterHandler := MakeHandlerGetMany[*data.Energy](cmdSelectAfter)
 	r.GET("/energies",
 		func(c *gin.Context) {
-			prev := getprevparam(c).(int)
-			next := getnextparam(c).(int)
-			pin := getpinparam(c)
-			if prev != 0 && next != 0 {
+			prev := ctxQParamInt(c, "prev")
+			next := ctxQParamInt(c, "next")
+			pin := ctxQParamInt(c, "pin")
+			if prev != nil && next != nil {
 				c.AbortWithError(http.StatusBadRequest, paramErr{message: "cannot specify both prev and next parameter"})
+				return
 			}
-			if (prev != 0 || next != 0) && pin == 0 {
+			if (prev != nil || next != nil) && pin == nil {
 				c.AbortWithError(http.StatusBadRequest, paramErr{message: "for prev or next parameter the pin parameter is mandatory"})
+				return
 			}
-			if prev > 0 {
-				beforeHandler(c)
-			} else if next > 0 {
-				afterHandler(c)
+			if prev != nil {
+				beforeHandler(c, []any{*pin, *prev})
+			} else if next != nil {
+				afterHandler(c, []any{*pin, *next})
 			} else {
 				c.AbortWithError(400, paramErr{message: "nor prev nor next parameter specified"})
 			}
@@ -82,5 +79,8 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	}
 	postHandler := MakeHandlerPostOne[*data.Energy](cmdSave)
 
-	r.POST("/energies", postHandler)
+	r.POST("/energies",
+		func(c *gin.Context) {
+			postHandler(c, []any{})
+		})
 }

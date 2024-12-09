@@ -1,18 +1,10 @@
 package handlers
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 )
-
-type errorResponse struct {
-	Error string `json:"error"`
-}
-
-func abortWith(statuscode int) func(c *gin.Context, err error) {
-	return func(c *gin.Context, err error) {
-		c.AbortWithError(statuscode, err)
-	}
-}
 
 type paramErr struct {
 	message string
@@ -20,4 +12,27 @@ type paramErr struct {
 
 func (e paramErr) Error() string {
 	return e.message
+}
+
+func ctxQParamInt(c *gin.Context, name string) *int {
+	v, e := c.GetQuery(name)
+	if e {
+		x, err := strconv.Atoi(v)
+		if err != nil {
+			return nil
+		} else {
+			return &x
+		}
+	} else {
+		return nil
+	}
+}
+
+func ctxPParam(c *gin.Context, name string) *any {
+	v, e := c.Get(name)
+	if e {
+		return &v
+	} else {
+		return nil
+	}
 }

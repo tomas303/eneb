@@ -14,18 +14,8 @@ func Reg_common(r *gin.Engine) {
 
 func errHandler(c *gin.Context) {
 	defer func() {
-		if err, exists := c.Get("error"); exists {
-			if err, ok := err.(error); ok {
-				errResponse := errorResponse{
-					Error: err.Error(),
-				}
-				c.IndentedJSON(http.StatusBadRequest, errResponse)
-			} else {
-				errResponse := errorResponse{
-					Error: "doesn't support error interface",
-				}
-				c.IndentedJSON(http.StatusInternalServerError, errResponse)
-			}
+		if len(c.Errors) > 0 {
+			c.IndentedJSON(http.StatusBadRequest, c.Errors.JSON())
 		}
 	}()
 	c.Next()

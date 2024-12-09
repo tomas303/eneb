@@ -9,8 +9,6 @@ import (
 
 func Reg_energiesid(r *gin.Engine, db *sql.DB) {
 
-	getID := MakeGetPathParAsStr("id")
-
 	cmdSelectOne, err := data.MakeDataCmdSelectOne[*data.Energy](db,
 		"select id, kind, amount, info, created from energies where id = ?",
 		func(row data.RowScanner) (*data.Energy, error) {
@@ -25,5 +23,10 @@ func Reg_energiesid(r *gin.Engine, db *sql.DB) {
 		panic(err)
 	}
 
-	r.GET("/energies/:id", MakeHandlerGetOne[*data.Energy](getID, cmdSelectOne))
+	handler := MakeHandlerGetOne[*data.Energy](cmdSelectOne)
+	r.GET("/energies/:id",
+		func(c *gin.Context) {
+			id := ctxPParam(c, "id")
+			handler(c, []any{*id})
+		})
 }

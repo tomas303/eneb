@@ -7,11 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type HandlerFunc = func(*gin.Context)
+type HandlerFunc = func(*gin.Context, []any)
 
-func MakeHandlerGetOne[T any](param ParamGetterFunc, cmd data.DataCmdSelectOneFunc[T]) HandlerFunc {
-	return func(c *gin.Context) {
-		id := param(c)
+func MakeHandlerGetOne[T any](cmd data.DataCmdSelectOneFunc[T]) HandlerFunc {
+	return func(c *gin.Context, params []any) {
+		id := params[0]
 		value, err := cmd(id)
 		if err != nil {
 			c.Set("error", err)
@@ -21,13 +21,9 @@ func MakeHandlerGetOne[T any](param ParamGetterFunc, cmd data.DataCmdSelectOneFu
 	}
 }
 
-func MakeHandlerGetMany[T any](params []ParamGetterFunc, cmd data.DataCmdSelectManyFunc[T]) HandlerFunc {
-	return func(c *gin.Context) {
-		args := make([]any, len(params))
-		for i := 0; i < len(params); i++ {
-			args[i] = params[i](c)
-		}
-		value, err := cmd(args)
+func MakeHandlerGetMany[T any](cmd data.DataCmdSelectManyFunc[T]) HandlerFunc {
+	return func(c *gin.Context, params []any) {
+		value, err := cmd(params)
 		if err != nil {
 			c.Set("error", err)
 			return
@@ -37,7 +33,7 @@ func MakeHandlerGetMany[T any](params []ParamGetterFunc, cmd data.DataCmdSelectM
 }
 
 func MakeHandlerPostOne[T any](cmd data.DataCmdSaveOneFunc[T]) HandlerFunc {
-	return func(c *gin.Context) {
+	return func(c *gin.Context, params []any) {
 		var en T
 		if err := c.BindJSON(&en); err != nil {
 			c.Set("error", err)

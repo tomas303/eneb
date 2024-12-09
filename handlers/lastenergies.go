@@ -3,15 +3,11 @@ package handlers
 import (
 	"database/sql"
 	"eneb/data"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Reg_lastenergies(r *gin.Engine, db *sql.DB) {
-
-	getcountparam := MakeGetQueryParAsInt("count", 10, abortWith(http.StatusBadRequest))
-
 	cmdSelectMany, err := data.MakeDataCmdSelectMany[*data.Energy](db,
 		`select id, kind, amount, info, created 
 		from energies 
@@ -28,5 +24,10 @@ func Reg_lastenergies(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	r.GET("/lastenergies", MakeHandlerGetMany[*data.Energy]([]ParamGetterFunc{getcountparam}, cmdSelectMany))
+	handler := MakeHandlerGetMany[*data.Energy](cmdSelectMany)
+	r.GET("/lastenergies",
+		func(c *gin.Context) {
+			count := ctxQParamInt(c, "count")
+			handler(c, []any{count})
+		})
 }
