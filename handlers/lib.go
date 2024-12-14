@@ -14,6 +14,15 @@ func (e paramErr) Error() string {
 	return e.message
 }
 
+func ctxQParamStr(c *gin.Context, name string) *string {
+	v, e := c.GetQuery(name)
+	if e {
+		return &v
+	} else {
+		return nil
+	}
+}
+
 func ctxQParamInt(c *gin.Context, name string) *int {
 	v, e := c.GetQuery(name)
 	if e {

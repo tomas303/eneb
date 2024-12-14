@@ -13,8 +13,8 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	cmdSelectBefore, err := data.MakeDataCmdSelectMany[*data.Energy](db,
 		`select id, kind, amount, info, created 
 		from energies 
-		where created < ?
-		order by created desc limit ?`,
+		where (created, id) < (?, ?)
+		order by created, id desc limit ?`,
 		false,
 		func(row data.RowScanner) (*data.Energy, error) {
 			en := data.NewEnergy()
@@ -32,8 +32,8 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	cmdSelectAfter, err := data.MakeDataCmdSelectMany[*data.Energy](db,
 		`select id, kind, amount, info, created 
 		from energies 
-		where created > ?
-		order by created limit ?`,
+		where (created, id) > (?, ?)
+		order by created, id limit ?`,
 		false,
 		func(row data.RowScanner) (*data.Energy, error) {
 			en := data.NewEnergy()
@@ -52,18 +52,19 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 			prev := ctxQParamInt(c, "prev")
 			next := ctxQParamInt(c, "next")
 			pin := ctxQParamInt(c, "pin")
+			id := ctxQParamStr(c, "id")
 			if prev != nil && next != nil {
 				c.AbortWithError(http.StatusBadRequest, paramErr{message: "cannot specify both prev and next parameter"})
 				return
 			}
-			if (prev != nil || next != nil) && pin == nil {
-				c.AbortWithError(http.StatusBadRequest, paramErr{message: "for prev or next parameter the pin parameter is mandatory"})
+			if (prev != nil || next != nil) && (pin == nil || id == nil) {
+				c.AbortWithError(http.StatusBadRequest, paramErr{message: "for prev or next parameter the pin and id parameters are mandatory"})
 				return
 			}
 			if prev != nil {
-				beforeHandler(c, []any{*pin, *prev})
+				beforeHandler(c, []any{*pin, *id, *prev})
 			} else if next != nil {
-				afterHandler(c, []any{*pin, *next})
+				afterHandler(c, []any{*pin, *id, *next})
 			} else {
 				c.AbortWithError(400, paramErr{message: "nor prev nor next parameter specified"})
 			}
