@@ -3,71 +3,35 @@ package handlers
 import (
 	"database/sql"
 	"eneb/data"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Reg_energies(r *gin.Engine, db *sql.DB) {
 
-	cmdSelectBefore, err := data.MakeDataCmdSelectMany[*data.Energy](db,
-		`select id, kind, amount, info, created 
-		from energies 
-		where (created, id) < (?, ?)
-		order by created, id desc limit ?`,
-		false,
-		func(row data.RowScanner) (*data.Energy, error) {
-			en := data.NewEnergy()
-			err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created.Val)
-			if err != nil {
-				return nil, err
-			}
-			return &en, nil
-		})
-	if err != nil {
-		panic(err)
+	getScanner := func(row data.RowScanner) (*data.Energy, error) {
+		en := data.NewEnergy()
+		err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created.Val)
+		if err != nil {
+			return nil, err
+		}
+		return &en, nil
 	}
-	beforeHandler := MakeHandlerGetMany[*data.Energy](cmdSelectBefore)
 
-	cmdSelectAfter, err := data.MakeDataCmdSelectMany[*data.Energy](db,
+	cmdSelect, err := data.MakeDataCmdSelectMany[*data.Energy](db,
 		`select id, kind, amount, info, created 
 		from energies 
-		where (created, id) > (?, ?)
-		order by created, id limit ?`,
+		order by created, id`,
 		false,
-		func(row data.RowScanner) (*data.Energy, error) {
-			en := data.NewEnergy()
-			err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created.Val)
-			if err != nil {
-				return nil, err
-			}
-			return &en, nil
-		})
+		getScanner)
 	if err != nil {
 		panic(err)
 	}
-	afterHandler := MakeHandlerGetMany[*data.Energy](cmdSelectAfter)
+	getHandler := MakeHandlerGetMany[*data.Energy](cmdSelect)
+
 	r.GET("/energies",
 		func(c *gin.Context) {
-			prev := ctxQParamInt(c, "prev")
-			next := ctxQParamInt(c, "next")
-			pin := ctxQParamInt(c, "pin")
-			id := ctxQParamStr(c, "id")
-			if prev != nil && next != nil {
-				c.AbortWithError(http.StatusBadRequest, paramErr{message: "cannot specify both prev and next parameter"})
-				return
-			}
-			if (prev != nil || next != nil) && (pin == nil || id == nil) {
-				c.AbortWithError(http.StatusBadRequest, paramErr{message: "for prev or next parameter the pin and id parameters are mandatory"})
-				return
-			}
-			if prev != nil {
-				beforeHandler(c, []any{*pin, *id, *prev})
-			} else if next != nil {
-				afterHandler(c, []any{*pin, *id, *next})
-			} else {
-				c.AbortWithError(400, paramErr{message: "nor prev nor next parameter specified"})
-			}
+			getHandler(c, []any{})
 		})
 
 	cmdSave, err := data.MakeDataCmdSaveOne[*data.Energy](db,

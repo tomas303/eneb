@@ -31,19 +31,10 @@ func initDB(db *sql.DB) error {
 			kind INTEGER,
 			amount INTEGER,
 			info TEXT,
-			created INTEGER
+			created INTEGER,
+			PRIMARY KEY (id)
 		);`,
-		`CREATE TABLE IF NOT EXISTS tags (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			tag TEXT
-		);`,
-		`CREATE TABLE IF NOT EXISTS energiestags (
-			enerygy_id TEXT,
-			tag_id INTEGER,
-			PRIMARY KEY(enerygy_id, tag_id),
-			FOREIGN KEY(enerygy_id) REFERENCES energies(id),
-			FOREIGN KEY(tag_id) REFERENCES tags(id)
-			);`,
+		`CREATE UNIQUE INDEX IF NOT EXISTS ENERGIES_I_PG ON ENERGIES (created, id);`,
 	}
 
 	for _, stmt := range sqlStatements {

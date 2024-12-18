@@ -23,6 +23,21 @@ func ctxQParamStr(c *gin.Context, name string) *string {
 	}
 }
 
+func ctxQParamBool(c *gin.Context, name string) *bool {
+	v, e := c.GetQuery(name)
+	if e {
+		if v == "true" {
+			b := true
+			return &b
+		} else {
+			b := false
+			return &b
+		}
+	} else {
+		return nil
+	}
+}
+
 func ctxQParamInt(c *gin.Context, name string) *int {
 	v, e := c.GetQuery(name)
 	if e {
