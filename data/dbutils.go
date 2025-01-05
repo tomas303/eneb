@@ -35,6 +35,13 @@ func initDB(db *sql.DB) error {
 			PRIMARY KEY (id)
 		);`,
 		`CREATE UNIQUE INDEX IF NOT EXISTS ENERGIES_I_PG ON ENERGIES (created, id);`,
+		`CREATE TABLE IF NOT EXISTS places (
+			id TEXT,
+			name TEXT,
+			circuitbreakercurrent INTEGER,
+			PRIMARY KEY (id)
+		);`,
+		`CREATE UNIQUE INDEX IF NOT EXISTS PLACES_I_PG ON PLACES (name, id);`,
 	}
 
 	for _, stmt := range sqlStatements {
