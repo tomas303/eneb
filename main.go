@@ -55,8 +55,6 @@ func main() {
 	handlers.Reg_root(r)
 	handlers.Reg_energies(r, db)
 	handlers.Reg_energiespaging(r, db)
-	handlers.Reg_energiesid(r, db)
-	handlers.Reg_lastenergies(r, db)
 	handlers.Reg_places(r, db)
 	handlers.Reg_placespaging(r, db)
 
