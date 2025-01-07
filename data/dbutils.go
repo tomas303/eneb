@@ -24,30 +24,66 @@ func OpenDB(dbpath string) *sql.DB {
 	return db
 }
 
+type SQLCommand struct {
+	Statement string
+	ShouldRun func(db *sql.DB) bool
+}
+
+func columnExists(db *sql.DB, tableName, columnName string) bool {
+	var exists int
+	query := fmt.Sprintf(`SELECT COUNT(*) FROM pragma_table_info('%s') WHERE name='%s';`, tableName, columnName)
+	err := db.QueryRow(query).Scan(&exists)
+	if err != nil {
+		log.Printf("error checking for column '%s' in table '%s': %v", columnName, tableName, err)
+		return false
+	}
+	return exists > 0
+}
+
 func initDB(db *sql.DB) error {
-	sqlStatements := []string{
-		`CREATE TABLE IF NOT EXISTS energies (
-			id TEXT,
-			kind INTEGER,
-			amount INTEGER,
-			info TEXT,
-			created INTEGER,
-			PRIMARY KEY (id)
-		);`,
-		`CREATE UNIQUE INDEX IF NOT EXISTS ENERGIES_I_PG ON ENERGIES (created, id);`,
-		`CREATE TABLE IF NOT EXISTS places (
-			id TEXT,
-			name TEXT,
-			circuitbreakercurrent INTEGER,
-			PRIMARY KEY (id)
-		);`,
-		`CREATE UNIQUE INDEX IF NOT EXISTS PLACES_I_PG ON PLACES (name, id);`,
+	sqlCommands := []SQLCommand{
+		{
+			Statement: `CREATE TABLE IF NOT EXISTS places (
+				id TEXT,
+				name TEXT,
+				circuitbreakercurrent INTEGER,
+				PRIMARY KEY (id)
+			);`,
+			ShouldRun: nil,
+		},
+		{
+			Statement: `CREATE UNIQUE INDEX IF NOT EXISTS PLACES_I_PG ON PLACES (name, id);`,
+			ShouldRun: nil,
+		},
+		{
+			Statement: `CREATE TABLE IF NOT EXISTS energies (
+				id TEXT,
+				kind INTEGER,
+				amount INTEGER,
+				info TEXT,
+				created INTEGER,
+				PRIMARY KEY (id)
+			);`,
+			ShouldRun: nil,
+		},
+		{
+			Statement: `CREATE UNIQUE INDEX IF NOT EXISTS ENERGIES_I_PG ON ENERGIES (created, id);`,
+			ShouldRun: nil,
+		},
+		{
+			Statement: `ALTER TABLE energies ADD COLUMN place_id TEXT REFERENCES places(id);`,
+			ShouldRun: func(db *sql.DB) bool {
+				return !columnExists(db, "energies", "place_id")
+			},
+		},
 	}
 
-	for _, stmt := range sqlStatements {
-		_, err := db.Exec(stmt)
-		if err != nil {
-			return fmt.Errorf("error executing statement %q: %v", stmt, err)
+	for _, cmd := range sqlCommands {
+		if cmd.ShouldRun == nil || cmd.ShouldRun(db) {
+			_, err := db.Exec(cmd.Statement)
+			if err != nil {
+				return fmt.Errorf("error executing statement %q: %v", cmd.Statement, err)
+			}
 		}
 	}
 

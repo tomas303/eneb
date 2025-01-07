@@ -11,7 +11,7 @@ func Reg_energiespaging(r *gin.Engine, db *sql.DB) {
 
 	getScanner := func(row data.RowScanner) (*data.Energy, error) {
 		en := data.NewEnergy()
-		err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created.Val)
+		err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created.Val, &en.Place_ID)
 		if err != nil {
 			return nil, err
 		}
@@ -19,7 +19,7 @@ func Reg_energiespaging(r *gin.Engine, db *sql.DB) {
 	}
 
 	cmdSelectBefore, err := data.MakeDataCmdSelectMany[*data.Energy](db,
-		`select id, kind, amount, info, created 
+		`select id, kind, amount, info, created, place_id
 		from energies 
 		where (created, id) < (?, ?)
 		order by created desc, id desc limit ?`,
@@ -31,7 +31,7 @@ func Reg_energiespaging(r *gin.Engine, db *sql.DB) {
 	beforeHandler := MakeHandlerGetMany[*data.Energy](cmdSelectBefore)
 
 	cmdSelectAfter, err := data.MakeDataCmdSelectMany[*data.Energy](db,
-		`select id, kind, amount, info, created 
+		`select id, kind, amount, info, created, place_id
 		from energies 
 		where (created, id) > (?, ?)
 		order by created, id limit ?`,

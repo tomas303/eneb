@@ -11,7 +11,7 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 
 	getScanner := func(row data.RowScanner) (*data.Energy, error) {
 		en := data.NewEnergy()
-		err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created.Val)
+		err := row.Scan(&en.ID, &en.Kind, &en.Amount, &en.Info, &en.Created.Val, &en.Place_ID)
 		if err != nil {
 			return nil, err
 		}
@@ -19,7 +19,7 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	}
 
 	cmdSelect, err := data.MakeDataCmdSelectMany[*data.Energy](db,
-		`select id, kind, amount, info, created 
+		`select id, kind, amount, info, created, place_ 
 		from energies 
 		order by created, id`,
 		false,
@@ -35,9 +35,9 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 		})
 
 	cmdSave, err := data.MakeDataCmdSaveOne[*data.Energy](db,
-		"insert or replace into energies(id, kind, amount, info, created) VALUES(?,?,?,?,?)",
+		"insert or replace into energies(id, kind, amount, info, created, place_id) VALUES(?,?,?,?,?,?)",
 		func(en *data.Energy) []any {
-			return []any{en.ID, en.Kind, en.Amount, en.Info, en.Created.Val}
+			return []any{en.ID, en.Kind, en.Amount, en.Info, en.Created.Val, en.Place_ID}
 		})
 	if err != nil {
 		panic(err)
