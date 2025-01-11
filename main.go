@@ -57,6 +57,8 @@ func main() {
 	handlers.Reg_energiespaging(r, db)
 	handlers.Reg_places(r, db)
 	handlers.Reg_placespaging(r, db)
+	handlers.Reg_providers(r, db)
+	handlers.Reg_providerspaging(r, db)
 
 	// start
 	r.Run(fmt.Sprintf("0.0.0.0:%d", cfg.Server.Port))

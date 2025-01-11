@@ -40,6 +40,17 @@ func columnExists(db *sql.DB, tableName, columnName string) bool {
 	return exists > 0
 }
 
+func tableExists(db *sql.DB, tableName string) bool {
+	var exists int
+	query := fmt.Sprintf(`SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='%s';`, tableName)
+	err := db.QueryRow(query).Scan(&exists)
+	if err != nil {
+		log.Printf("error checking for table '%s': %v", tableName, err)
+		return false
+	}
+	return exists > 0
+}
+
 func initDB(db *sql.DB) error {
 	sqlCommands := []SQLCommand{
 		{
@@ -74,6 +85,16 @@ func initDB(db *sql.DB) error {
 			Statement: `ALTER TABLE energies ADD COLUMN place_id TEXT REFERENCES places(id);`,
 			ShouldRun: func(db *sql.DB) bool {
 				return !columnExists(db, "energies", "place_id")
+			},
+		},
+		{
+			Statement: `CREATE TABLE IF NOT EXISTS providers (
+				id TEXT,
+				name TEXT,
+				PRIMARY KEY (id)
+			);`,
+			ShouldRun: func(db *sql.DB) bool {
+				return !tableExists(db, "providers")
 			},
 		},
 	}
