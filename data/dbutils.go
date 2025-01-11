@@ -101,6 +101,23 @@ func initDB(db *sql.DB) error {
 				return !tableExists(db, "providers")
 			},
 		},
+		{
+			Statement: `CREATE TABLE prices (
+				value INTEGER,
+				fromdate TEXT,
+				provider_id TEXT,
+				energykind INTEGER
+			);`,
+			ShouldRun: func(db *sql.DB) bool {
+				return !tableExists(db, "prices")
+			},
+		},
+		{
+			Statement: `ALTER TABLE prices ADD CONSTRAINT fk_provider FOREIGN KEY (provider_id) REFERENCES providers(id);`,
+			ShouldRun: func(db *sql.DB) bool {
+				return !columnExists(db, "prices", "provider_id")
+			},
+		},
 	}
 
 	for _, cmd := range sqlCommands {
