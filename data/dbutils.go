@@ -54,20 +54,22 @@ func tableExists(db *sql.DB, tableName string) bool {
 func initDB(db *sql.DB) error {
 	sqlCommands := []SQLCommand{
 		{
-			Statement: `CREATE TABLE IF NOT EXISTS places (
+			Statement: `CREATE TABLE places (
 				id TEXT,
 				name TEXT,
 				circuitbreakercurrent INTEGER,
 				PRIMARY KEY (id)
 			);`,
-			ShouldRun: nil,
+			ShouldRun: func(db *sql.DB) bool {
+				return !tableExists(db, "places")
+			},
 		},
 		{
 			Statement: `CREATE UNIQUE INDEX IF NOT EXISTS PLACES_I_PG ON PLACES (name, id);`,
 			ShouldRun: nil,
 		},
 		{
-			Statement: `CREATE TABLE IF NOT EXISTS energies (
+			Statement: `CREATE TABLE energies (
 				id TEXT,
 				kind INTEGER,
 				amount INTEGER,
@@ -75,7 +77,9 @@ func initDB(db *sql.DB) error {
 				created INTEGER,
 				PRIMARY KEY (id)
 			);`,
-			ShouldRun: nil,
+			ShouldRun: func(db *sql.DB) bool {
+				return !tableExists(db, "energies")
+			},
 		},
 		{
 			Statement: `CREATE UNIQUE INDEX IF NOT EXISTS ENERGIES_I_PG ON ENERGIES (created, id);`,
@@ -88,7 +92,7 @@ func initDB(db *sql.DB) error {
 			},
 		},
 		{
-			Statement: `CREATE TABLE IF NOT EXISTS providers (
+			Statement: `CREATE TABLE providers (
 				id TEXT,
 				name TEXT,
 				PRIMARY KEY (id)
