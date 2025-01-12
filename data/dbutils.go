@@ -103,10 +103,12 @@ func initDB(db *sql.DB) error {
 		},
 		{
 			Statement: `CREATE TABLE prices (
+				id TEXT,
 				value INTEGER,
 				fromdate TEXT,
 				provider_id TEXT,
-				pricetype INTEGER
+				pricetype INTEGER,
+				PRIMARY KEY (id)
 			);`,
 			ShouldRun: func(db *sql.DB) bool {
 				return !tableExists(db, "prices")

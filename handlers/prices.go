@@ -37,7 +37,7 @@ func Reg_prices(r *gin.Engine, db *sql.DB) {
 			return
 		}
 
-		_, err := db.Exec("INSERT OR REPLACE INTO prices (value, fromdate, provider_id, pricetype) VALUES (?, ?, ?, ?)", price.Value, price.FromDate, price.Provider_ID, price.PriceType)
+		_, err := db.Exec("INSERT OR REPLACE INTO prices (id, value, fromdate, provider_id, pricetype) VALUES (?, ?, ?, ?, ?)", price.ID, price.Value, price.FromDate, price.Provider_ID, price.PriceType)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

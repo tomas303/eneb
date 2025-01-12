@@ -4,9 +4,12 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Price struct {
+	ID          string
 	Value       int
 	FromDate    cdate
 	Provider_ID string
@@ -15,6 +18,7 @@ type Price struct {
 
 func NewPrice() Price {
 	return Price{
+		ID:          uuid.NewString(),
 		Value:       0,
 		FromDate:    cdate{time.Now()},
 		Provider_ID: "???",
