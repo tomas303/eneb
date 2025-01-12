@@ -10,7 +10,7 @@ type Price struct {
 	Value       int
 	FromDate    cdate
 	Provider_ID string
-	EnergyKind  int
+	PriceType   int
 }
 
 func NewPrice() Price {
@@ -18,7 +18,7 @@ func NewPrice() Price {
 		Value:       0,
 		FromDate:    cdate{time.Now()},
 		Provider_ID: "???",
-		EnergyKind:  0,
+		PriceType:   0,
 	}
 }
 

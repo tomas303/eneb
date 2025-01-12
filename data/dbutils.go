@@ -106,7 +106,7 @@ func initDB(db *sql.DB) error {
 				value INTEGER,
 				fromdate TEXT,
 				provider_id TEXT,
-				energykind INTEGER
+				pricetype INTEGER
 			);`,
 			ShouldRun: func(db *sql.DB) bool {
 				return !tableExists(db, "prices")

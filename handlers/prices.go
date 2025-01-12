@@ -10,7 +10,7 @@ import (
 
 func Reg_prices(r *gin.Engine, db *sql.DB) {
 	r.GET("/prices", func(c *gin.Context) {
-		rows, err := db.Query("SELECT value, fromdate, provider_id, energykind FROM prices")
+		rows, err := db.Query("SELECT value, fromdate, provider_id, pricetype FROM prices")
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -20,7 +20,7 @@ func Reg_prices(r *gin.Engine, db *sql.DB) {
 		var prices []data.Price
 		for rows.Next() {
 			var price data.Price
-			if err := rows.Scan(&price.Value, &price.FromDate, &price.Provider_ID, &price.EnergyKind); err != nil {
+			if err := rows.Scan(&price.Value, &price.FromDate, &price.Provider_ID, &price.PriceType); err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
@@ -37,7 +37,7 @@ func Reg_prices(r *gin.Engine, db *sql.DB) {
 			return
 		}
 
-		_, err := db.Exec("INSERT OR REPLACE INTO prices (value, fromdate, provider_id, energykind) VALUES (?, ?, ?, ?)", price.Value, price.FromDate, price.Provider_ID, price.EnergyKind)
+		_, err := db.Exec("INSERT OR REPLACE INTO prices (value, fromdate, provider_id, pricetype) VALUES (?, ?, ?, ?)", price.Value, price.FromDate, price.Provider_ID, price.PriceType)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
