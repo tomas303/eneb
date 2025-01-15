@@ -115,6 +115,12 @@ func initDB(db *sql.DB) error {
 			},
 		},
 		{
+			Statement: `ALTER TABLE prices ADD COLUMN energykind INTEGER;`,
+			ShouldRun: func(db *sql.DB) bool {
+				return !columnExists(db, "prices", "energykind")
+			},
+		},
+		{
 			Statement: `ALTER TABLE prices ADD CONSTRAINT fk_provider FOREIGN KEY (provider_id) REFERENCES providers(id);`,
 			ShouldRun: func(db *sql.DB) bool {
 				return !columnExists(db, "prices", "provider_id")

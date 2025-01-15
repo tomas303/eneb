@@ -9,26 +9,31 @@ import (
 )
 
 func Reg_prices(r *gin.Engine, db *sql.DB) {
-	r.GET("/prices", func(c *gin.Context) {
-		rows, err := db.Query("SELECT value, fromdate, provider_id, pricetype FROM prices")
+
+	getScanner := func(row data.RowScanner) (*data.Price, error) {
+		price := data.NewPrice()
+		err := row.Scan(&price.ID, &price.Value, &price.FromDate, &price.Provider_ID, &price.PriceType, &price.EnergyKind)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			return nil, err
 		}
-		defer rows.Close()
+		return &price, nil
+	}
 
-		var prices []data.Price
-		for rows.Next() {
-			var price data.Price
-			if err := rows.Scan(&price.Value, &price.FromDate, &price.Provider_ID, &price.PriceType); err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
-			prices = append(prices, price)
-		}
+	cmdSelect, err := data.MakeDataCmdSelectMany[*data.Price](db,
+		`SELECT id, value, fromdate, provider_id, pricetype, energykind
+		FROM prices 
+		ORDER BY fromdate DESC, id DESC`,
+		true,
+		getScanner)
+	if err != nil {
+		panic(err)
+	}
+	handler := MakeHandlerGetMany[*data.Price](cmdSelect)
 
-		c.JSON(http.StatusOK, prices)
-	})
+	r.GET("/prices",
+		func(c *gin.Context) {
+			handler(c, nil)
+		})
 
 	r.POST("/prices", func(c *gin.Context) {
 		var price data.Price
@@ -37,7 +42,7 @@ func Reg_prices(r *gin.Engine, db *sql.DB) {
 			return
 		}
 
-		_, err := db.Exec("INSERT OR REPLACE INTO prices (id, value, fromdate, provider_id, pricetype) VALUES (?, ?, ?, ?, ?)", price.ID, price.Value, price.FromDate, price.Provider_ID, price.PriceType)
+		_, err := db.Exec("INSERT OR REPLACE INTO prices (id, value, fromdate, provider_id, pricetype, energykind) VALUES (?, ?, ?, ?, ?, ?)", price.ID, price.Value, price.FromDate, price.Provider_ID, price.PriceType, price.EnergyKind)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

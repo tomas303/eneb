@@ -11,7 +11,7 @@ func Reg_pricespaging(r *gin.Engine, db *sql.DB) {
 
 	getScanner := func(row data.RowScanner) (*data.Price, error) {
 		price := data.NewPrice()
-		err := row.Scan(&price.ID, &price.Value, &price.FromDate, &price.Provider_ID, &price.PriceType)
+		err := row.Scan(&price.ID, &price.Value, &price.FromDate, &price.Provider_ID, &price.PriceType, &price.EnergyKind)
 		if err != nil {
 			return nil, err
 		}
@@ -19,7 +19,7 @@ func Reg_pricespaging(r *gin.Engine, db *sql.DB) {
 	}
 
 	cmdSelectBefore, err := data.MakeDataCmdSelectMany[*data.Price](db,
-		`SELECT id, value, fromdate, provider_id, pricetype
+		`SELECT id, value, fromdate, provider_id, pricetype, energykind
 		FROM prices 
 		WHERE (fromdate, id) < (?, ?)
 		ORDER BY fromdate DESC, id DESC LIMIT ?`,
@@ -31,7 +31,7 @@ func Reg_pricespaging(r *gin.Engine, db *sql.DB) {
 	beforeHandler := MakeHandlerGetMany[*data.Price](cmdSelectBefore)
 
 	cmdSelectAfter, err := data.MakeDataCmdSelectMany[*data.Price](db,
-		`SELECT id, value, fromdate, provider_id, pricetype
+		`SELECT id, value, fromdate, provider_id, pricetype, energykind
 		FROM prices 
 		WHERE (fromdate, id) > (?, ?)
 		ORDER BY fromdate, id LIMIT ?`,
