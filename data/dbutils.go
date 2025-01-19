@@ -121,16 +121,11 @@ func initDB(db *sql.DB) error {
 				product_id TEXT,
 				pricetype INTEGER,
 				energykind INTEGER,
-				PRIMARY KEY (id)
+				PRIMARY KEY (id),
+				FOREIGN KEY (product_id) REFERENCES products(id)
 			);`,
 			ShouldRun: func(db *sql.DB) bool {
 				return !tableExists(db, "prices")
-			},
-		},
-		{
-			Statement: `ALTER TABLE prices ADD CONSTRAINT fk_provider FOREIGN KEY (provider_id) REFERENCES providers(id);`,
-			ShouldRun: func(db *sql.DB) bool {
-				return !columnExists(db, "prices", "provider_id")
 			},
 		},
 	}
