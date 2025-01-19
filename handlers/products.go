@@ -3,17 +3,15 @@ package handlers
 import (
 	"database/sql"
 	"eneb/data"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func Reg_products(r *gin.Engine, db *sql.DB) {
 
 	getScanner := func(row data.RowScanner) (*data.Product, error) {
 		product := data.NewProduct()
-		err := row.Scan(&product.ID, &product.Name, &product.ProviderID)
+		err := row.Scan(&product.ID, &product.Name, &product.Provider_ID)
 		if err != nil {
 			return nil, err
 		}
@@ -29,27 +27,24 @@ func Reg_products(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	handler := MakeHandlerGetMany[*data.Product](cmdSelect)
+	getHandler := MakeHandlerGetMany[*data.Product](cmdSelect)
 
 	r.GET("/products",
 		func(c *gin.Context) {
-			handler(c, nil)
+			getHandler(c, nil)
 		})
 
+	cmdSave, err := data.MakeDataCmdSaveOne[*data.Product](db,
+		"insert or replace into products(id, name, provider_id) VALUES(?,?,?)",
+		func(product *data.Product) []any {
+			return []any{product.ID, product.Name, product.Provider_ID}
+		})
+	if err != nil {
+		panic(err)
+	}
+	postHandler := MakeHandlerPostOne[*data.Product](cmdSave)
+
 	r.POST("/products", func(c *gin.Context) {
-		var product data.Product
-		if err := c.ShouldBindJSON(&product); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		product.ID = uuid.New().String()
-		_, err := db.Exec("INSERT OR REPLACE INTO products (id, name, provider_id) VALUES (?, ?, ?)", product.ID, product.Name, product.ProviderID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusCreated, product)
+		postHandler(c, []any{})
 	})
 }
