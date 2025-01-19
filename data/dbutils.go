@@ -115,6 +115,20 @@ func initDB(db *sql.DB) error {
 			},
 		},
 		{
+			Statement: `CREATE TABLE placeproducts (
+				id TEXT,	
+				fromdate TEXT,
+				place_id TEXT,
+				product_id TEXT,
+				PRIMARY KEY (id),
+				FOREIGN KEY (place_id) REFERENCES places(id),
+				FOREIGN KEY (product_id) REFERENCES products(id)
+			);`,
+			ShouldRun: func(db *sql.DB) bool {
+				return !tableExists(db, "placeproducts")
+			},
+		},
+		{
 			Statement: `CREATE TABLE prices (
 				id TEXT,
 				value INTEGER,

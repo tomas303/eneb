@@ -63,6 +63,8 @@ func main() {
 	handlers.Reg_pricespaging(r, db)
 	handlers.Reg_products(r, db)
 	handlers.Reg_productspaging(r, db)
+	handlers.Reg_placeproducts(r, db)
+	handlers.Reg_placeproductspaging(r, db)
 
 	// start
 	r.Run(fmt.Sprintf("0.0.0.0:%d", cfg.Server.Port))
