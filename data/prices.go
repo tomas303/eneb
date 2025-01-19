@@ -9,22 +9,22 @@ import (
 )
 
 type Price struct {
-	ID          string
-	Value       int
-	FromDate    cdate
-	Provider_ID string
-	PriceType   int
-	EnergyKind  int
+	ID         string
+	Value      int
+	FromDate   cdate
+	Product_ID string
+	PriceType  int
+	EnergyKind int
 }
 
 func NewPrice() Price {
 	return Price{
-		ID:          uuid.NewString(),
-		Value:       0,
-		FromDate:    cdate{time.Now()},
-		Provider_ID: "???",
-		PriceType:   0,
-		EnergyKind:  0,
+		ID:         uuid.NewString(),
+		Value:      0,
+		FromDate:   cdate{time.Now()},
+		Product_ID: "???",
+		PriceType:  0,
+		EnergyKind: 0,
 	}
 }
 

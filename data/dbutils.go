@@ -102,31 +102,6 @@ func initDB(db *sql.DB) error {
 			},
 		},
 		{
-			Statement: `CREATE TABLE prices (
-				id TEXT,
-				value INTEGER,
-				fromdate TEXT,
-				provider_id TEXT,
-				pricetype INTEGER,
-				PRIMARY KEY (id)
-			);`,
-			ShouldRun: func(db *sql.DB) bool {
-				return !tableExists(db, "prices")
-			},
-		},
-		{
-			Statement: `ALTER TABLE prices ADD COLUMN energykind INTEGER;`,
-			ShouldRun: func(db *sql.DB) bool {
-				return !columnExists(db, "prices", "energykind")
-			},
-		},
-		{
-			Statement: `ALTER TABLE prices ADD CONSTRAINT fk_provider FOREIGN KEY (provider_id) REFERENCES providers(id);`,
-			ShouldRun: func(db *sql.DB) bool {
-				return !columnExists(db, "prices", "provider_id")
-			},
-		},
-		{
 			Statement: `CREATE TABLE products (
 				id TEXT,
 				name TEXT,
@@ -136,6 +111,26 @@ func initDB(db *sql.DB) error {
 			);`,
 			ShouldRun: func(db *sql.DB) bool {
 				return !tableExists(db, "products")
+			},
+		},
+		{
+			Statement: `CREATE TABLE prices (
+				id TEXT,
+				value INTEGER,
+				fromdate TEXT,
+				product_id TEXT,
+				pricetype INTEGER,
+				energykind INTEGER,
+				PRIMARY KEY (id)
+			);`,
+			ShouldRun: func(db *sql.DB) bool {
+				return !tableExists(db, "prices")
+			},
+		},
+		{
+			Statement: `ALTER TABLE prices ADD CONSTRAINT fk_provider FOREIGN KEY (provider_id) REFERENCES providers(id);`,
+			ShouldRun: func(db *sql.DB) bool {
+				return !columnExists(db, "prices", "provider_id")
 			},
 		},
 	}
