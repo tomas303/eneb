@@ -126,6 +126,18 @@ func initDB(db *sql.DB) error {
 				return !columnExists(db, "prices", "provider_id")
 			},
 		},
+		{
+			Statement: `CREATE TABLE products (
+				id TEXT,
+				name TEXT,
+				provider_id TEXT,
+				PRIMARY KEY (id),
+				FOREIGN KEY (provider_id) REFERENCES providers(id)
+			);`,
+			ShouldRun: func(db *sql.DB) bool {
+				return !tableExists(db, "products")
+			},
+		},
 	}
 
 	for _, cmd := range sqlCommands {
