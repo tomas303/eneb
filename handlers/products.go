@@ -11,7 +11,7 @@ func Reg_products(r *gin.Engine, db *sql.DB) {
 
 	getScanner := func(row data.RowScanner) (*data.Product, error) {
 		product := data.NewProduct()
-		err := row.Scan(&product.ID, &product.Name, &product.Provider_ID)
+		err := row.Scan(&product.ID, &product.Name, &product.Provider_ID, &product.EnergyKind)
 		if err != nil {
 			return nil, err
 		}
@@ -19,7 +19,7 @@ func Reg_products(r *gin.Engine, db *sql.DB) {
 	}
 
 	cmdSelect, err := data.MakeDataCmdSelectMany[*data.Product](db,
-		`SELECT id, name, provider_id
+		`SELECT id, name, provider_id, energykind
 		FROM products 
 		ORDER BY name DESC, id DESC`,
 		true,
@@ -35,9 +35,9 @@ func Reg_products(r *gin.Engine, db *sql.DB) {
 		})
 
 	cmdSave, err := data.MakeDataCmdSaveOne[*data.Product](db,
-		"insert or replace into products(id, name, provider_id) VALUES(?,?,?)",
+		"insert or replace into products(id, name, provider_id, energykind) VALUES(?,?,?,?)",
 		func(product *data.Product) []any {
-			return []any{product.ID, product.Name, product.Provider_ID}
+			return []any{product.ID, product.Name, product.Provider_ID, product.EnergyKind}
 		})
 	if err != nil {
 		panic(err)

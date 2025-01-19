@@ -6,6 +6,7 @@ type Product struct {
 	ID          string
 	Name        string
 	Provider_ID string
+	EnergyKind  int
 }
 
 func NewProduct() Product {
@@ -13,5 +14,6 @@ func NewProduct() Product {
 		ID:          uuid.New().String(),
 		Name:        "???",
 		Provider_ID: "",
+		EnergyKind:  0,
 	}
 }

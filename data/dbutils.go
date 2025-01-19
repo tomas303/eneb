@@ -106,6 +106,7 @@ func initDB(db *sql.DB) error {
 				id TEXT,
 				name TEXT,
 				provider_id TEXT,
+				energykind INTEGER,
 				PRIMARY KEY (id),
 				FOREIGN KEY (provider_id) REFERENCES providers(id)
 			);`,
