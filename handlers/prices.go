@@ -12,7 +12,14 @@ func Reg_prices(r *gin.Engine, db *sql.DB) {
 
 	getScanner := func(row data.RowScanner) (*data.Price, error) {
 		price := data.NewPrice()
-		err := row.Scan(&price.ID, &price.Value, &price.FromDate, &price.Product_ID, &price.PriceType, &price.EnergyKind)
+		err := row.Scan(
+			&price.ID,
+			&price.Value,
+			&price.EnergyKind,
+			&price.PriceType,
+			&price.Provider_ID,
+			&price.Name,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -20,9 +27,9 @@ func Reg_prices(r *gin.Engine, db *sql.DB) {
 	}
 
 	cmdSelect, err := data.MakeDataCmdSelectMany[*data.Price](db,
-		`SELECT id, value, fromdate, product_id, pricetype, energykind
+		`SELECT id, value, energykind, pricetype, provider_id, name
 		FROM prices 
-		ORDER BY fromdate DESC, id DESC`,
+		ORDER BY id DESC`,
 		true,
 		getScanner)
 	if err != nil {
@@ -42,7 +49,12 @@ func Reg_prices(r *gin.Engine, db *sql.DB) {
 			return
 		}
 
-		_, err := db.Exec("INSERT OR REPLACE INTO prices (id, value, fromdate, product_id, pricetype, energykind) VALUES (?, ?, ?, ?, ?, ?)", price.ID, price.Value, price.FromDate, price.Product_ID, price.PriceType, price.EnergyKind)
+		_, err := db.Exec(
+			`INSERT OR REPLACE INTO prices 
+			(id, value, energykind, pricetype, provider_id, name) 
+			VALUES (?, ?, ?, ?, ?, ?)`,
+			price.ID, price.Value, price.EnergyKind, price.PriceType, price.Provider_ID, price.Name,
+		)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
