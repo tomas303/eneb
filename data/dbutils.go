@@ -102,42 +102,15 @@ func initDB(db *sql.DB) error {
 			},
 		},
 		{
-			Statement: `CREATE TABLE products (
-				id TEXT,
-				name TEXT,
-				provider_id TEXT,
-				energykind INTEGER,
-				PRIMARY KEY (id),
-				FOREIGN KEY (provider_id) REFERENCES providers(id)
-			);`,
-			ShouldRun: func(db *sql.DB) bool {
-				return !tableExists(db, "products")
-			},
-		},
-		{
-			Statement: `CREATE TABLE placeproducts (
-				id TEXT,	
-				fromdate TEXT,
-				place_id TEXT,
-				product_id TEXT,
-				PRIMARY KEY (id),
-				FOREIGN KEY (place_id) REFERENCES places(id),
-				FOREIGN KEY (product_id) REFERENCES products(id)
-			);`,
-			ShouldRun: func(db *sql.DB) bool {
-				return !tableExists(db, "placeproducts")
-			},
-		},
-		{
 			Statement: `CREATE TABLE prices (
 				id TEXT,
 				value INTEGER,
-				fromdate TEXT,
-				product_id TEXT,
-				pricetype INTEGER,
 				energykind INTEGER,
+				pricetype INTEGER,
+				provider_id TEXT,
+				name TEXT,
 				PRIMARY KEY (id),
-				FOREIGN KEY (product_id) REFERENCES products(id)
+				FOREIGN KEY (provider_id) REFERENCES providers(id)
 			);`,
 			ShouldRun: func(db *sql.DB) bool {
 				return !tableExists(db, "prices")

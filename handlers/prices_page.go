@@ -21,8 +21,8 @@ func Reg_pricespaging(r *gin.Engine, db *sql.DB) {
 	cmdSelectBefore, err := data.MakeDataCmdSelectMany[*data.Price](db,
 		`SELECT id, value, energykind, pricetype, provider_id, name
 		FROM prices 
-		WHERE id < ?
-		ORDER BY id DESC LIMIT ?`,
+		WHERE (name, id) < (?, ?)
+		ORDER BY name DESC, id DESC LIMIT ?`,
 		true,
 		getScanner)
 	if err != nil {
@@ -33,8 +33,8 @@ func Reg_pricespaging(r *gin.Engine, db *sql.DB) {
 	cmdSelectAfter, err := data.MakeDataCmdSelectMany[*data.Price](db,
 		`SELECT id, value, energykind, pricetype, provider_id, name
 		FROM prices 
-		WHERE id > ?
-		ORDER BY id LIMIT ?`,
+		WHERE (name, id) > (?, ?)
+		ORDER BY name, id LIMIT ?`,
 		false,
 		getScanner)
 	if err != nil {
@@ -44,16 +44,18 @@ func Reg_pricespaging(r *gin.Engine, db *sql.DB) {
 
 	r.GET("/prices/page/prev",
 		func(c *gin.Context) {
+			name := ctxQParamStr(c, "name")
 			id := ctxQParamStr(c, "id")
 			limit := ctxQParamInt(c, "limit")
-			beforeHandler(c, []any{*id, *limit})
+			beforeHandler(c, []any{*name, *id, *limit})
 		})
 
 	r.GET("/prices/page/next",
 		func(c *gin.Context) {
+			name := ctxQParamStr(c, "name")
 			id := ctxQParamStr(c, "id")
 			limit := ctxQParamInt(c, "limit")
-			afterHandler(c, []any{*id, *limit})
+			afterHandler(c, []any{*name, *id, *limit})
 		})
 
 }
