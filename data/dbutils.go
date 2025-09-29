@@ -2,8 +2,10 @@ package data
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 )
 
 func OpenDB(dbpath string) *sql.DB {
@@ -75,6 +77,7 @@ func initDB(db *sql.DB) error {
 				amount INTEGER,
 				info TEXT,
 				created INTEGER,
+				place_id TEXT,
 				PRIMARY KEY (id)
 			);`,
 			ShouldRun: func(db *sql.DB) bool {
@@ -116,6 +119,21 @@ func initDB(db *sql.DB) error {
 				return !tableExists(db, "prices")
 			},
 		},
+		{
+			Statement: `CREATE TABLE energyprices (
+				id TEXT,
+				kind INTEGER,
+				fromdate INTEGER,
+				price_id TEXT,
+				place_id TEXT,
+				PRIMARY KEY (id),
+				FOREIGN KEY (price_id) REFERENCES prices(id),
+				FOREIGN KEY (place_id) REFERENCES places(id)
+			);`,
+			ShouldRun: func(db *sql.DB) bool {
+				return !tableExists(db, "energyprices")
+			},
+		},
 	}
 
 	for _, cmd := range sqlCommands {
@@ -128,4 +146,26 @@ func initDB(db *sql.DB) error {
 	}
 
 	return nil
+}
+
+type cbigint struct {
+	Val int64
+}
+
+func (cbi *cbigint) UnmarshalJSON(data []byte) error {
+	var value string
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	x, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return err
+	}
+	cbi.Val = x
+	return nil
+}
+
+func (cbi cbigint) MarshalJSON() ([]byte, error) {
+	value := strconv.FormatInt(cbi.Val, 10)
+	return json.Marshal(value)
 }
