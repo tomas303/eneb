@@ -13,7 +13,6 @@ func Reg_energyprices(r *gin.Engine, db *sql.DB) {
 		price := data.NewEnergyPrice()
 		err := row.Scan(
 			&price.ID,
-			&price.Kind,
 			&price.FromDate.Val,
 			&price.Price_ID,
 			&price.Place_ID,
@@ -25,7 +24,7 @@ func Reg_energyprices(r *gin.Engine, db *sql.DB) {
 	}
 
 	cmdSelect, err := data.MakeDataCmdSelectMany(db,
-		`SELECT id, kind, fromdate, price_id, place_id
+		`SELECT id, fromdate, price_id, place_id
 		FROM energyprices
 		ORDER BY fromdate DESC, id`,
 		true,
@@ -41,9 +40,9 @@ func Reg_energyprices(r *gin.Engine, db *sql.DB) {
 		})
 
 	cmdSave, err := data.MakeDataCmdSaveOne(db,
-		"insert or replace into energyprices(id, kind, fromdate, price_id, place_id) VALUES(?,?,?,?,?)",
+		"insert or replace into energyprices(id, fromdate, price_id, place_id) VALUES(?,?,?,?)",
 		func(price *data.EnergyPrice) []any {
-			return []any{price.ID, price.Kind, price.FromDate.Val, price.Price_ID, price.Place_ID}
+			return []any{price.ID, price.FromDate.Val, price.Price_ID, price.Place_ID}
 		})
 	if err != nil {
 		panic(err)

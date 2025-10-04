@@ -122,7 +122,6 @@ func initDB(db *sql.DB) error {
 		{
 			Statement: `CREATE TABLE energyprices (
 				id TEXT,
-				kind INTEGER,
 				fromdate INTEGER,
 				price_id TEXT,
 				place_id TEXT,
