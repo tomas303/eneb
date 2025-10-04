@@ -18,7 +18,7 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 		return &en, nil
 	}
 
-	cmdSelect, err := data.MakeDataCmdSelectMany[*data.Energy](db,
+	cmdSelect, err := data.MakeDataCmdSelectMany(db,
 		`select id, kind, amount, info, created, place_ 
 		from energies 
 		order by created, id`,
@@ -27,14 +27,14 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	getHandler := MakeHandlerGetMany[*data.Energy](cmdSelect)
+	getHandler := MakeHandlerGetMany(cmdSelect)
 
 	r.GET("/energies",
 		func(c *gin.Context) {
 			getHandler(c, []any{})
 		})
 
-	cmdSave, err := data.MakeDataCmdSaveOne[*data.Energy](db,
+	cmdSave, err := data.MakeDataCmdSaveOne(db,
 		"insert or replace into energies(id, kind, amount, info, created, place_id) VALUES(?,?,?,?,?,?)",
 		func(en *data.Energy) []any {
 			return []any{en.ID, en.Kind, en.Amount, en.Info, en.Created.Val, en.Place_ID}
@@ -42,7 +42,7 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	postHandler := MakeHandlerPostOne[*data.Energy](cmdSave)
+	postHandler := MakeHandlerPostOne(cmdSave)
 
 	r.POST("/energies",
 		func(c *gin.Context) {

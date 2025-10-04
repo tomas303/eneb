@@ -18,7 +18,7 @@ func Reg_energiespaging(r *gin.Engine, db *sql.DB) {
 		return &en, nil
 	}
 
-	cmdSelectBefore, err := data.MakeDataCmdSelectMany[*data.Energy](db,
+	cmdSelectBefore, err := data.MakeDataCmdSelectMany(db,
 		`select id, kind, amount, info, created, place_id
 		from energies 
 		where (created, id) < (?, ?)
@@ -28,9 +28,9 @@ func Reg_energiespaging(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	beforeHandler := MakeHandlerGetMany[*data.Energy](cmdSelectBefore)
+	beforeHandler := MakeHandlerGetMany(cmdSelectBefore)
 
-	cmdSelectAfter, err := data.MakeDataCmdSelectMany[*data.Energy](db,
+	cmdSelectAfter, err := data.MakeDataCmdSelectMany(db,
 		`select id, kind, amount, info, created, place_id
 		from energies 
 		where (created, id) > (?, ?)
@@ -40,7 +40,7 @@ func Reg_energiespaging(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	afterHandler := MakeHandlerGetMany[*data.Energy](cmdSelectAfter)
+	afterHandler := MakeHandlerGetMany(cmdSelectAfter)
 
 	r.GET("/energies/page/prev",
 		func(c *gin.Context) {

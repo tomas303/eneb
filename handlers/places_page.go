@@ -18,7 +18,7 @@ func Reg_placespaging(r *gin.Engine, db *sql.DB) {
 		return &place, nil
 	}
 
-	cmdSelectBefore, err := data.MakeDataCmdSelectMany[*data.Place](db,
+	cmdSelectBefore, err := data.MakeDataCmdSelectMany(db,
 		`select id, name, circuitbreakercurrent
 		from places
 		where (name, id) < (?, ?)
@@ -28,9 +28,9 @@ func Reg_placespaging(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	beforeHandler := MakeHandlerGetMany[*data.Place](cmdSelectBefore)
+	beforeHandler := MakeHandlerGetMany(cmdSelectBefore)
 
-	cmdSelectAfter, err := data.MakeDataCmdSelectMany[*data.Place](db,
+	cmdSelectAfter, err := data.MakeDataCmdSelectMany(db,
 		`select id, name, circuitbreakercurrent
 		from places
 		where (name, id) > (?, ?)
@@ -40,7 +40,7 @@ func Reg_placespaging(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	afterHandler := MakeHandlerGetMany[*data.Place](cmdSelectAfter)
+	afterHandler := MakeHandlerGetMany(cmdSelectAfter)
 
 	r.GET("/places/page/prev",
 		func(c *gin.Context) {

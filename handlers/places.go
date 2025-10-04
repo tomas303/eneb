@@ -18,7 +18,7 @@ func Reg_places(r *gin.Engine, db *sql.DB) {
 		return &place, nil
 	}
 
-	cmdSelect, err := data.MakeDataCmdSelectMany[*data.Place](db,
+	cmdSelect, err := data.MakeDataCmdSelectMany(db,
 		`select id, name, circuitbreakercurrent
 		from places
 		order by name, id`,
@@ -27,14 +27,14 @@ func Reg_places(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	getHandler := MakeHandlerGetMany[*data.Place](cmdSelect)
+	getHandler := MakeHandlerGetMany(cmdSelect)
 
 	r.GET("/places",
 		func(c *gin.Context) {
 			getHandler(c, []any{})
 		})
 
-	cmdSave, err := data.MakeDataCmdSaveOne[*data.Place](db,
+	cmdSave, err := data.MakeDataCmdSaveOne(db,
 		"insert or replace into places(id, name, circuitbreakercurrent) VALUES(?,?,?)",
 		func(place *data.Place) []any {
 			return []any{place.ID, place.Name, place.CircuitBreakerCurrent}
@@ -42,7 +42,7 @@ func Reg_places(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	postHandler := MakeHandlerPostOne[*data.Place](cmdSave)
+	postHandler := MakeHandlerPostOne(cmdSave)
 
 	r.POST("/places",
 		func(c *gin.Context) {

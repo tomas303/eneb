@@ -18,7 +18,7 @@ func Reg_providerspaging(r *gin.Engine, db *sql.DB) {
 		return &provider, nil
 	}
 
-	cmdSelectBefore, err := data.MakeDataCmdSelectMany[*data.Provider](db,
+	cmdSelectBefore, err := data.MakeDataCmdSelectMany(db,
 		`SELECT id, name
 		FROM providers 
 		WHERE id < ?
@@ -28,9 +28,9 @@ func Reg_providerspaging(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	beforeHandler := MakeHandlerGetMany[*data.Provider](cmdSelectBefore)
+	beforeHandler := MakeHandlerGetMany(cmdSelectBefore)
 
-	cmdSelectAfter, err := data.MakeDataCmdSelectMany[*data.Provider](db,
+	cmdSelectAfter, err := data.MakeDataCmdSelectMany(db,
 		`SELECT id, name
 		FROM providers 
 		WHERE id > ?
@@ -40,7 +40,7 @@ func Reg_providerspaging(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	afterHandler := MakeHandlerGetMany[*data.Provider](cmdSelectAfter)
+	afterHandler := MakeHandlerGetMany(cmdSelectAfter)
 
 	r.GET("/providers/page/prev",
 		func(c *gin.Context) {

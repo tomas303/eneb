@@ -26,7 +26,7 @@ func Reg_prices(r *gin.Engine, db *sql.DB) {
 		return &price, nil
 	}
 
-	cmdSelect, err := data.MakeDataCmdSelectMany[*data.Price](db,
+	cmdSelect, err := data.MakeDataCmdSelectMany(db,
 		`SELECT id, value, energykind, pricetype, provider_id, name
 		FROM prices 
 		ORDER BY id DESC`,
@@ -35,7 +35,7 @@ func Reg_prices(r *gin.Engine, db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	handler := MakeHandlerGetMany[*data.Price](cmdSelect)
+	handler := MakeHandlerGetMany(cmdSelect)
 
 	r.GET("/prices",
 		func(c *gin.Context) {
