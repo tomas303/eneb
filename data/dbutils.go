@@ -234,7 +234,6 @@ func initDB(db *sql.DB) error {
 				AmountDeltas AD 
 				join slice_coefs SC on SC.id = AD.id
 				order by AD.place_id, AD.kind, AD.created 
-
 			;`,
 			ShouldRun: func(db *sql.DB) bool {
 				return !viewExists(db, "v_consumptionprice")
@@ -245,7 +244,7 @@ func initDB(db *sql.DB) error {
 				with
 				pivoted AS (
 				select 
-					place_id, kind, 
+					place_id, kind, slice_start, slice_end,
 					avg(proportional_amount) * 10.55 / 1000 as amountMwh,
 					avg(months_diff) as months,
 					MAX(CASE WHEN pricetype = 1 THEN value END) AS ComodityPerVolume,
@@ -256,17 +255,17 @@ func initDB(db *sql.DB) error {
 					MAX(CASE WHEN pricetype = 11 THEN value END) AS VAT
 				from v_consumptionprice
 				where pricetype in (1,2,3,4,5,11)
-				group by place_id, kind, slice_end
+				group by place_id, kind, slice_start, slice_end
 				),
 				priceCalc as (
 				select 
-					place_id, kind, amountMwh, months, VAT,
+					place_id, kind, slice_start, slice_end, amountMwh, months, VAT,
 					ROUND((amountMwh * ComodityPerVolume) + (months * ComodityPerMonth), 0) as unregulatedPrice,
 					ROUND((amountMwh * DistributionPerVolume) + (months * DistributionPerMonth) + (amountMwh * OTE), 0) as regulatedPrice
 				from pivoted
 				)
 				select 
-				place_id, kind, amountMwh, months, unregulatedPrice, regulatedPrice,
+				place_id, kind, slice_start, slice_end, amountMwh, months, unregulatedPrice, regulatedPrice,
 				ROUND((unregulatedPrice + regulatedPrice) * (100 + VAT / 100), 0) as totalPrice  
 				from priceCalc
 			;`,
