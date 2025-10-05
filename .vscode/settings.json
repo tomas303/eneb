@@ -1,3 +1,6 @@
 {
-    "go.testFlags": ["-v"]
+    "go.testFlags": [
+        "-v"
+    ],
+    "github.copilot.chat.agent.autoFix": false
 }

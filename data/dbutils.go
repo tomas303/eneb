@@ -254,7 +254,8 @@ func initDB(db *sql.DB) error {
 					MAX(CASE WHEN pricetype = 5 THEN value END) AS OTE,
 					MAX(CASE WHEN pricetype = 11 THEN value END) AS VAT
 				from v_consumptionprice
-				where pricetype in (1,2,3,4,5,11)
+				where kind = 3 
+  				and pricetype in (1,2,3,4,5,11)
 				group by place_id, kind, slice_start, slice_end
 				),
 				priceCalc as (
@@ -265,7 +266,7 @@ func initDB(db *sql.DB) error {
 				from pivoted
 				)
 				select 
-				place_id, kind, slice_start, slice_end, amountMwh, months, unregulatedPrice, regulatedPrice,
+				place_id, slice_start, slice_end, amountMwh, months, unregulatedPrice, regulatedPrice,
 				ROUND((unregulatedPrice + regulatedPrice) * (100 + VAT / 100), 0) as totalPrice  
 				from priceCalc
 			;`,

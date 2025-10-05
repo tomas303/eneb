@@ -19,7 +19,7 @@ func Reg_energies(r *gin.Engine, db *sql.DB) {
 	}
 
 	cmdSelect, err := data.MakeDataCmdSelectMany(db,
-		`select id, kind, amount, info, created, place_ 
+		`select id, kind, amount, info, created, place_id 
 		from energies 
 		order by created, id`,
 		false,

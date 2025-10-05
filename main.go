@@ -63,6 +63,7 @@ func main() {
 	handlers.Reg_pricespaging(r, db)
 	handlers.Reg_energypricespaging(r, db)
 	handlers.Reg_energyprices(r, db)
+	handlers.Reg_gaspriceserie(r, db)
 	// start
 	r.Run(fmt.Sprintf("0.0.0.0:%d", cfg.Server.Port))
 }
