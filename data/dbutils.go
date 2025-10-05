@@ -267,7 +267,7 @@ func initDB(db *sql.DB) error {
 				)
 				select 
 				place_id, kind, amountMwh, months, unregulatedPrice, regulatedPrice,
-				ROUND((unregulatedPrice + regulatedPrice) * VAT, 0) as totalPrice  
+				ROUND((unregulatedPrice + regulatedPrice) * (100 + VAT / 100), 0) as totalPrice  
 				from priceCalc
 			;`,
 			ShouldRun: func(db *sql.DB) bool {
