@@ -12,7 +12,7 @@ tasks:
       - go.mod
       - exclude: '**/*_test.go'
     cmds:
-      - GOOS=linux GOARCH=amd64 go build -o ./eneb .
+      - GOOS=linux GOARCH=amd64 GIN_MODE=release go build -o ./eneb .
     generates:
       - ./eneb
 
@@ -23,6 +23,6 @@ tasks:
       - go.mod
       - exclude: '**/*_test.go'
     cmds:
-      - GOOS=windows GOARCH=amd64 go build -o ./eneb.exe .
+      - GOOS=windows GOARCH=amd64 GIN_MODE=release go build -o ./eneb.exe .
     generates:
       - ./eneb.exe
