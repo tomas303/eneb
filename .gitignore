@@ -1,4 +1,6 @@
 /eneb
 *.db
 *_debug_*
+/eneb.exe
 dist
+.task
