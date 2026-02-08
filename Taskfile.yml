@@ -10,7 +10,9 @@ tasks:
     sources:
       - '**/*.go'
       - go.mod
-      - exclude: '**/*_test.go'
+    exclude:
+      - '**/*_test.go'
+    method: timestamp
     cmds:
       - GOOS=linux GOARCH=amd64 GIN_MODE=release go build -o ./eneb .
     generates:
@@ -21,7 +23,9 @@ tasks:
     sources:
       - '**/*.go'
       - go.mod
-      - exclude: '**/*_test.go'
+    exclude:
+      - '**/*_test.go'
+    method: timestamp
     cmds:
       - GOOS=windows GOARCH=amd64 GIN_MODE=release go build -o ./eneb.exe .
     generates:
