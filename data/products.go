@@ -4,21 +4,19 @@ import (
 	"github.com/google/uuid"
 )
 
-type Price struct {
+type Product struct {
 	ID          string
 	EnergyKind  int
 	PriceType   int
-	Value       int
 	Provider_ID string
 	Name        string
 }
 
-func NewPrice() Price {
-	return Price{
+func NewProduct() Product {
+	return Product{
 		ID:          uuid.NewString(),
 		EnergyKind:  0,
 		PriceType:   0,
-		Value:       0,
 		Provider_ID: "",
 		Name:        "???",
 	}

@@ -7,22 +7,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Reg_energypricespaging(r *gin.Engine, db *sql.DB) {
+func Reg_productpricespaging(r *gin.Engine, db *sql.DB) {
 
-	getScanner := func(row data.RowScanner) (*data.EnergyPrice, error) {
-		en := data.NewEnergyPrice()
-		err := row.Scan(&en.ID, &en.FromDate.Val, &en.Price_ID, &en.Place_ID)
+	getScanner := func(row data.RowScanner) (*data.ProductPrice, error) {
+		price := data.NewProductPrice()
+		err := row.Scan(&price.ID, &price.Product_ID, &price.FromDate.Val, &price.Value)
 		if err != nil {
 			return nil, err
 		}
-		return &en, nil
+		return &price, nil
 	}
 
 	cmdSelectBefore, err := data.MakeDataCmdSelectMany(db,
-		`select id, fromdate, price_id, place_id
-		from energyprices
-		where (fromdate, id) < (?, ?)
-		order by fromdate desc, id desc limit ?`,
+		`SELECT id, product_id, fromdate, value
+		FROM productprices
+		WHERE (fromdate, id) < (?, ?)
+		ORDER BY fromdate DESC, id DESC LIMIT ?`,
 		true,
 		getScanner)
 	if err != nil {
@@ -31,10 +31,10 @@ func Reg_energypricespaging(r *gin.Engine, db *sql.DB) {
 	beforeHandler := MakeHandlerGetMany(cmdSelectBefore)
 
 	cmdSelectAfter, err := data.MakeDataCmdSelectMany(db,
-		`select id, fromdate, price_id, place_id
-		from energyprices
-		where (fromdate, id) > (?, ?)
-		order by fromdate, id limit ?`,
+		`SELECT id, product_id, fromdate, value
+		FROM productprices
+		WHERE (fromdate, id) > (?, ?)
+		ORDER BY fromdate, id LIMIT ?`,
 		false,
 		getScanner)
 	if err != nil {
@@ -42,7 +42,7 @@ func Reg_energypricespaging(r *gin.Engine, db *sql.DB) {
 	}
 	afterHandler := MakeHandlerGetMany(cmdSelectAfter)
 
-	r.GET("/energyprices/page/prev",
+	r.GET("/productprices/page/prev",
 		func(c *gin.Context) {
 			fromdate := ctxQParamInt(c, "fromdate")
 			id := ctxQParamStr(c, "id")
@@ -50,7 +50,7 @@ func Reg_energypricespaging(r *gin.Engine, db *sql.DB) {
 			beforeHandler(c, []any{*fromdate, *id, *limit})
 		})
 
-	r.GET("/energyprices/page/next",
+	r.GET("/productprices/page/next",
 		func(c *gin.Context) {
 			fromdate := ctxQParamInt(c, "fromdate")
 			id := ctxQParamStr(c, "id")

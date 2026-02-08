@@ -7,20 +7,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Reg_pricespaging(r *gin.Engine, db *sql.DB) {
+func Reg_productspaging(r *gin.Engine, db *sql.DB) {
 
-	getScanner := func(row data.RowScanner) (*data.Price, error) {
-		price := data.NewPrice()
-		err := row.Scan(&price.ID, &price.Value, &price.EnergyKind, &price.PriceType, &price.Provider_ID, &price.Name)
+	getScanner := func(row data.RowScanner) (*data.Product, error) {
+		product := data.NewProduct()
+		err := row.Scan(
+			&product.ID,
+			&product.EnergyKind,
+			&product.PriceType,
+			&product.Provider_ID,
+			&product.Name,
+		)
 		if err != nil {
 			return nil, err
 		}
-		return &price, nil
+		return &product, nil
 	}
 
 	cmdSelectBefore, err := data.MakeDataCmdSelectMany(db,
-		`SELECT id, value, energykind, pricetype, provider_id, name
-		FROM prices 
+		`SELECT id, energykind, pricetype, provider_id, name
+		FROM products
 		WHERE (name, id) < (?, ?)
 		ORDER BY name DESC, id DESC LIMIT ?`,
 		true,
@@ -31,8 +37,8 @@ func Reg_pricespaging(r *gin.Engine, db *sql.DB) {
 	beforeHandler := MakeHandlerGetMany(cmdSelectBefore)
 
 	cmdSelectAfter, err := data.MakeDataCmdSelectMany(db,
-		`SELECT id, value, energykind, pricetype, provider_id, name
-		FROM prices 
+		`SELECT id, energykind, pricetype, provider_id, name
+		FROM products
 		WHERE (name, id) > (?, ?)
 		ORDER BY name, id LIMIT ?`,
 		false,
@@ -42,7 +48,7 @@ func Reg_pricespaging(r *gin.Engine, db *sql.DB) {
 	}
 	afterHandler := MakeHandlerGetMany(cmdSelectAfter)
 
-	r.GET("/prices/page/prev",
+	r.GET("/products/page/prev",
 		func(c *gin.Context) {
 			name := ctxQParamStr(c, "name")
 			id := ctxQParamStr(c, "id")
@@ -50,7 +56,7 @@ func Reg_pricespaging(r *gin.Engine, db *sql.DB) {
 			beforeHandler(c, []any{*name, *id, *limit})
 		})
 
-	r.GET("/prices/page/next",
+	r.GET("/products/page/next",
 		func(c *gin.Context) {
 			name := ctxQParamStr(c, "name")
 			id := ctxQParamStr(c, "id")

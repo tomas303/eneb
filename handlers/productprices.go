@@ -7,15 +7,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Reg_energyprices(r *gin.Engine, db *sql.DB) {
+func Reg_productprices(r *gin.Engine, db *sql.DB) {
 
-	getScanner := func(row data.RowScanner) (*data.EnergyPrice, error) {
-		price := data.NewEnergyPrice()
+	getScanner := func(row data.RowScanner) (*data.ProductPrice, error) {
+		price := data.NewProductPrice()
 		err := row.Scan(
 			&price.ID,
+			&price.Product_ID,
 			&price.FromDate.Val,
-			&price.Price_ID,
-			&price.Place_ID,
+			&price.Value,
 		)
 		if err != nil {
 			return nil, err
@@ -24,8 +24,8 @@ func Reg_energyprices(r *gin.Engine, db *sql.DB) {
 	}
 
 	cmdSelect, err := data.MakeDataCmdSelectMany(db,
-		`SELECT id, fromdate, price_id, place_id
-		FROM energyprices
+		`SELECT id, product_id, fromdate, value
+		FROM productprices 
 		ORDER BY fromdate DESC, id`,
 		true,
 		getScanner)
@@ -34,22 +34,22 @@ func Reg_energyprices(r *gin.Engine, db *sql.DB) {
 	}
 	getHandler := MakeHandlerGetMany(cmdSelect)
 
-	r.GET("/energyprices",
+	r.GET("/productprices",
 		func(c *gin.Context) {
 			getHandler(c, []any{})
 		})
 
 	cmdSave, err := data.MakeDataCmdSaveOne(db,
-		"insert or replace into energyprices(id, fromdate, price_id, place_id) VALUES(?,?,?,?)",
-		func(price *data.EnergyPrice) []any {
-			return []any{price.ID, price.FromDate.Val, price.Price_ID, price.Place_ID}
+		"INSERT OR REPLACE INTO productprices(id, product_id, fromdate, value) VALUES(?,?,?,?)",
+		func(price *data.ProductPrice) []any {
+			return []any{price.ID, price.Product_ID, price.FromDate.Val, price.Value}
 		})
 	if err != nil {
 		panic(err)
 	}
 	postHandler := MakeHandlerPostOne(cmdSave)
 
-	r.POST("/energyprices",
+	r.POST("/productprices",
 		func(c *gin.Context) {
 			postHandler(c, []any{})
 		})
