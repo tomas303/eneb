@@ -12,7 +12,7 @@ tasks:
       - go.mod
     exclude:
       - '**/*_test.go'
-    method: timestamp
+    method: checksum
     cmds:
       - GOOS=linux GOARCH=amd64 GIN_MODE=release go build -o ./eneb .
     generates:
@@ -25,7 +25,7 @@ tasks:
       - go.mod
     exclude:
       - '**/*_test.go'
-    method: timestamp
+    method: checksum
     cmds:
       - GOOS=windows GOARCH=amd64 GIN_MODE=release go build -o ./eneb.exe .
     generates:
