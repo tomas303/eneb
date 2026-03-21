@@ -156,6 +156,19 @@ func initDB(db *sql.DB) error {
 				return !tableExists(db, "placeproducts")
 			},
 		},
+		{
+			Statement: `CREATE TABLE settlements (
+				id TEXT,
+				date INTEGER,
+				energykind INTEGER,
+				pricetype INTEGER,
+				amount INTEGER,
+				PRIMARY KEY (id)
+			);`,
+			ShouldRun: func(db *sql.DB) bool {
+				return !tableExists(db, "settlements")
+			},
+		},
 		// todo later add date views for price ranges, place ranges. Probably from to like include exclude boundaries
 		// {
 		// 	Statement: `create view v_consumptionprice as

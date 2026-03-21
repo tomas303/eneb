@@ -66,6 +66,8 @@ func main() {
 	handlers.Reg_placeproducts(r, db)
 	handlers.Reg_placeproductspaging(r, db)
 	handlers.Reg_gaspriceserie(r, db)
+	handlers.Reg_settlements(r, db)
+	handlers.Reg_settlementspaging(r, db)
 	// start
 	r.Run(fmt.Sprintf("0.0.0.0:%d", cfg.Server.Port))
 }
