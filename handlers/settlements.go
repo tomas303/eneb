@@ -12,7 +12,7 @@ func Reg_settlements(r *gin.Engine, db *sql.DB) {
 	// GET /settlements - List all
 	getScanner := func(row data.RowScanner) (*data.Settlement, error) {
 		settlement := data.NewSettlement()
-		err := row.Scan(&settlement.ID, &settlement.Date.Val, &settlement.EnergyKind, &settlement.PriceType, &settlement.Amount)
+		err := row.Scan(&settlement.ID, &settlement.Date.Val, &settlement.EnergyKind, &settlement.PriceType, &settlement.Amount, &settlement.Price)
 		if err != nil {
 			return nil, err
 		}
@@ -20,7 +20,7 @@ func Reg_settlements(r *gin.Engine, db *sql.DB) {
 	}
 
 	cmdSelect, err := data.MakeDataCmdSelectMany(db,
-		`select id, date, energykind, pricetype, amount
+		`select id, date, energykind, pricetype, amount, price
 		from settlements
 		order by date desc, id`,
 		false,
@@ -37,9 +37,9 @@ func Reg_settlements(r *gin.Engine, db *sql.DB) {
 
 	// POST /settlements - Create/Update
 	cmdSave, err := data.MakeDataCmdSaveOne(db,
-		"insert or replace into settlements(id, date, energykind, pricetype, amount) VALUES(?,?,?,?,?)",
+		"insert or replace into settlements(id, date, energykind, pricetype, amount, price) VALUES(?,?,?,?,?,?)",
 		func(settlement *data.Settlement) []any {
-			return []any{settlement.ID, settlement.Date.Val, settlement.EnergyKind, settlement.PriceType, settlement.Amount}
+			return []any{settlement.ID, settlement.Date.Val, settlement.EnergyKind, settlement.PriceType, settlement.Amount, settlement.Price}
 		})
 	if err != nil {
 		panic(err)

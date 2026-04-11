@@ -12,6 +12,7 @@ type Settlement struct {
 	EnergyKind int
 	PriceType  int
 	Amount     int
+	Price      int
 }
 
 func NewSettlement() Settlement {
@@ -21,5 +22,6 @@ func NewSettlement() Settlement {
 		EnergyKind: 0,
 		PriceType:  0,
 		Amount:     0,
+		Price:      0,
 	}
 }

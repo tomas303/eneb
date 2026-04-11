@@ -163,6 +163,7 @@ func initDB(db *sql.DB) error {
 				energykind INTEGER,
 				pricetype INTEGER,
 				amount INTEGER,
+				price INTEGER,
 				PRIMARY KEY (id)
 			);`,
 			ShouldRun: func(db *sql.DB) bool {

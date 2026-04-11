@@ -11,7 +11,7 @@ func Reg_settlementspaging(r *gin.Engine, db *sql.DB) {
 
 	getScanner := func(row data.RowScanner) (*data.Settlement, error) {
 		settlement := data.NewSettlement()
-		err := row.Scan(&settlement.ID, &settlement.Date.Val, &settlement.EnergyKind, &settlement.PriceType, &settlement.Amount)
+		err := row.Scan(&settlement.ID, &settlement.Date.Val, &settlement.EnergyKind, &settlement.PriceType, &settlement.Amount, &settlement.Price)
 		if err != nil {
 			return nil, err
 		}
@@ -20,7 +20,7 @@ func Reg_settlementspaging(r *gin.Engine, db *sql.DB) {
 
 	// Previous page (before cursor)
 	cmdSelectBefore, err := data.MakeDataCmdSelectMany(db,
-		`select id, date, energykind, pricetype, amount
+		`select id, date, energykind, pricetype, amount, price
 		from settlements
 		where (date, id) < (?, ?)
 		order by date desc, id desc limit ?`,
@@ -33,7 +33,7 @@ func Reg_settlementspaging(r *gin.Engine, db *sql.DB) {
 
 	// Next page (after cursor)
 	cmdSelectAfter, err := data.MakeDataCmdSelectMany(db,
-		`select id, date, energykind, pricetype, amount
+		`select id, date, energykind, pricetype, amount, price
 		from settlements
 		where (date, id) > (?, ?)
 		order by date, id limit ?`,
